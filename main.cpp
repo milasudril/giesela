@@ -56,7 +56,10 @@ int main()
 		gtk_container_add(GTK_CONTAINER(mainwin),GTK_WIDGET(gl_area));
 		gtk_widget_show_all(mainwin);
 		while(window_data.m_running)
-			{gtk_main_iteration_do(TRUE);}
+			{
+			gtk_gl_area_queue_render(gl_area);
+			gtk_main_iteration_do(TRUE);
+			}
 			
 		gtk_gl_area_make_current(gl_area); //Activate OpenGL before DTOR runs
 		}

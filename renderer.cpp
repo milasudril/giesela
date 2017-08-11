@@ -85,5 +85,5 @@ void Renderer::render() noexcept
 		};
 	glUniformMatrix4fv(0, 1, GL_FALSE, &M[0]);
 	glDrawArrays(GL_TRIANGLES,0,3);
-	m_theta+=16;
+	m_theta+=64;
 	}
