@@ -4,6 +4,7 @@
 #include "program.hpp"
 #include <GL/glew.h>
 #include <cstdio>
+#include <cmath>
 
 static auto initiated=false;
 
@@ -43,10 +44,10 @@ Renderer::Renderer()
 		  Shader{R"EOF(
 #version 450 core
 layout(location=0) in vec3 vertex_pos;
+layout(location=0) uniform mat4 ModelMatrix;
 void main()
 	{
-	gl_Position.xyz=vertex_pos;
-	gl_Position.w=1.0;
+	gl_Position=ModelMatrix*vec4(vertex_pos,1.0);
 	}
 )EOF",ShaderType::VERTEX_SHADER}
 		 ,Shader{R"EOF(
@@ -59,6 +60,7 @@ void main()
 )EOF",ShaderType::FRAGMENT_SHADER}
 		));
 	m_program->bind();
+	m_theta=0;
 	}
 
 Renderer::~Renderer()
@@ -73,5 +75,15 @@ void Renderer::render() noexcept
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
 	glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,nullptr);
+	auto theta=2.0f*std::acos(-1.0f)*(m_theta/65536.0f);
+	float M[16]=
+		{
+		 std::cos(theta),-std::sin(theta),0,0
+		,std::sin(theta),std::cos(theta),0,0
+		,0,0,1,0
+		,0,0,0,1
+		};
+	glUniformMatrix4fv(0, 1, GL_FALSE, &M[0]);
 	glDrawArrays(GL_TRIANGLES,0,3);
+	m_theta+=16;
 	}

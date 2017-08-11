@@ -22,7 +22,7 @@ namespace Giesela
 		private:
 			unsigned int m_vao;
 			unsigned int m_vbo;
-			
+			uint16_t m_theta;
 			std::unique_ptr<Program> m_program;
 		};
 	}
