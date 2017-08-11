@@ -1,6 +1,7 @@
 //@	{"targets":[{"name":"renderer.o","type":"object","pkgconfig_libs":["glew"]}]}
 
 #include "renderer.hpp"
+#include "program.hpp"
 #include <GL/glew.h>
 #include <cstdio>
 
@@ -38,6 +39,26 @@ Renderer::Renderer()
 	glClearColor(0,0,0,1);
 	glEnableVertexArrayAttrib(m_vao,0);
 	glBindVertexArray(m_vao);
+	m_program.reset(new Program(
+		  Shader{R"EOF(
+#version 450 core
+layout(location=0) in vec3 vertex_pos;
+void main()
+	{
+	gl_Position.xyz=vertex_pos;
+	gl_Position.w=1.0;
+	}
+)EOF",ShaderType::VERTEX_SHADER}
+		 ,Shader{R"EOF(
+#version 450 core
+out vec3 color;
+void main()
+	{
+	color=vec3(1,0,0);
+	}
+)EOF",ShaderType::FRAGMENT_SHADER}
+		));
+	m_program->bind();
 	}
 
 Renderer::~Renderer()

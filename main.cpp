@@ -47,6 +47,7 @@ int main()
 	auto gl_area=reinterpret_cast<GtkGLArea*>( gtk_gl_area_new() );
 	gtk_gl_area_set_has_depth_buffer(gl_area,TRUE);
 	gtk_gl_area_set_has_stencil_buffer(gl_area,TRUE);
+	gtk_gl_area_set_has_alpha(gl_area,FALSE);
 	gtk_gl_area_set_required_version(gl_area,4,5);
 		{
 		std::unique_ptr<Renderer> renderer;

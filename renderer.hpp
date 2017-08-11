@@ -6,8 +6,11 @@
 #ifndef GIESELA_RENDERER_HPP
 #define GIESELA_RENDERER_HPP
 
+#include <memory>
+
 namespace Giesela
 	{
+	class Program;
 	class Renderer
 		{
 		public:
@@ -19,6 +22,8 @@ namespace Giesela
 		private:
 			unsigned int m_vao;
 			unsigned int m_vbo;
+			
+			std::unique_ptr<Program> m_program;
 		};
 	}
 
