@@ -28,12 +28,19 @@ static void gl_init(GtkWidget* gl_area,void* user_data)
 	self->reset( new Renderer  );
 	}
 
-static gboolean render(GtkWidget* area,GdkGLContext* context,void* user_data)
+static gboolean render(GtkGLArea* gl_area,GdkGLContext* context,void* user_data)
 	{
 	auto self=reinterpret_cast<std::unique_ptr<Renderer>*>(user_data);
 	assert(self);
 	(*self)->render();
 	return TRUE;
+	}
+	
+static void resize(GtkGLArea* gl_area,int width,int height,void* user_data)
+	{
+	auto self=reinterpret_cast<std::unique_ptr<Renderer>*>(user_data);
+	gtk_gl_area_make_current(gl_area);
+	(*self)->viewport(width,height);
 	}
 	
 int main()
@@ -52,7 +59,9 @@ int main()
 		{
 		std::unique_ptr<Renderer> renderer;
 		g_signal_connect(gl_area,"realize",G_CALLBACK(gl_init),&renderer);
-		g_signal_connect(gl_area, "render", G_CALLBACK (render),&renderer);
+		g_signal_connect(gl_area,"render", G_CALLBACK(render),&renderer);
+		g_signal_connect(gl_area,"resize", G_CALLBACK(resize),&renderer);
+
 		gtk_container_add(GTK_CONTAINER(mainwin),GTK_WIDGET(gl_area));
 		gtk_widget_show_all(mainwin);
 		while(window_data.m_running)

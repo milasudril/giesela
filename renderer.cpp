@@ -12,10 +12,12 @@ using namespace Giesela;
 
 static const GLfloat g_vertex_buffer_data[]=
 	{
-	-1.0f, -1.0f, 0.0f,
-	1.0f, -1.0f, 0.0f,
-	0.0f,  1.0f, 0.0f
+	-1.0f, 0.0f, -1.0f,
+	1.0f, 0.0f, -1.0f,
+	0.0f, 0.0f, 1.0f,
 	};
+	
+static constexpr auto pi=std::acos(-1.0f);
 
 Renderer::Renderer()
 	{
@@ -44,10 +46,11 @@ Renderer::Renderer()
 		  Shader{R"EOF(
 #version 450 core
 layout(location=0) in vec3 vertex_pos;
-layout(location=0) uniform mat4 ModelMatrix;
+layout(location=0) uniform mat4 Model;
+layout(location=1) uniform mat4 MVP;
 void main()
 	{
-	gl_Position=ModelMatrix*vec4(vertex_pos,1.0);
+	gl_Position=MVP*vec4(vertex_pos,1.0);
 	}
 )EOF",ShaderType::VERTEX_SHADER}
 		 ,Shader{R"EOF(
@@ -61,6 +64,11 @@ void main()
 		));
 	m_program->bind();
 	m_theta=0;
+	m_cam_pos=glm::vec3{0.0f,-3.0f,1.0f};
+	
+	m_View=glm::lookAt(m_cam_pos,glm::vec3{0.0f,0.0f,0.0f},glm::vec3{0.0f,0.0f,1.0f});
+	m_Projection=glm::perspective(0.5f*pi,1.0f,0.1f,100.0f);
+
 	}
 
 Renderer::~Renderer()
@@ -70,20 +78,22 @@ Renderer::~Renderer()
 	glDeleteVertexArrays(1,&m_vao);
 	}
 	
+void Renderer::viewport(int width,int height) noexcept
+	{
+	m_Projection=glm::perspective(0.5f*pi
+		,static_cast<float>(width)/static_cast<float>(height),0.1f,100.0f);
+	}
+	
 void Renderer::render() noexcept
 	{
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
 	glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,nullptr);
-	auto theta=2.0f*std::acos(-1.0f)*(m_theta/65536.0f);
-	float M[16]=
-		{
-		 std::cos(theta),-std::sin(theta),0,0
-		,std::sin(theta),std::cos(theta),0,0
-		,0,0,1,0
-		,0,0,0,1
-		};
-	glUniformMatrix4fv(0, 1, GL_FALSE, &M[0]);
+	auto theta=2.0f*pi*(m_theta/65536.0f);
+	auto Model=glm::rotate(glm::mat4{},theta,glm::vec3{0.0f,0.0f,1.0f});
+	auto MVP=m_Projection*m_View*Model;
+	glUniformMatrix4fv(0, 1, GL_FALSE, &Model[0][0]);
+	glUniformMatrix4fv(1, 1, GL_FALSE, &MVP[0][0]);
 	glDrawArrays(GL_TRIANGLES,0,3);
 	m_theta+=64;
 	}

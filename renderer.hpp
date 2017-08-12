@@ -7,6 +7,10 @@
 #define GIESELA_RENDERER_HPP
 
 #include <memory>
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_AVX
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace Giesela
 	{
@@ -18,12 +22,18 @@ namespace Giesela
 			~Renderer();
 			
 			void render() noexcept;
+			void viewport(int width,int height) noexcept;
 			
 		private:
-			unsigned int m_vao;
-			unsigned int m_vbo;
 			uint16_t m_theta;
 			std::unique_ptr<Program> m_program;
+
+			glm::vec3 m_cam_pos;
+			glm::mat4 m_View;
+			glm::mat4 m_Projection;
+			
+			unsigned int m_vao;
+			unsigned int m_vbo;
 		};
 	}
 
