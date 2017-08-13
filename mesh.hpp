@@ -1,6 +1,6 @@
 //@	{
 //@	 "targets":[{"name":"mesh.hpp","type":"include"}]
-//@	,"dependenciees_extra":[{"ref":"mesh.o","rel":"implementation"}]
+//@	,"dependencies_extra":[{"ref":"mesh.o","rel":"implementation"}]
 //@	}
 
 #ifndef GIESELA_MESH_HPP

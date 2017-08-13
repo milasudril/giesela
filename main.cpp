@@ -1,6 +1,7 @@
 //@	{"targets":[{"name":"giesela","type":"application","pkgconfig_libs":["gtk+-3.0","glew"]}]}
 
 #include "renderer.hpp"
+#include "mesh.hpp"
 #include <gtk/gtk.h>
 #include <memory>
 #include <cassert>
@@ -45,7 +46,9 @@ static void resize(GtkGLArea* gl_area,int width,int height,void* user_data)
 	
 int main()
 	{
-	gtk_init(NULL,NULL);
+	auto test=Mesh::fromWavefrontObj(stdin,"stdin");
+		
+/*	gtk_init(NULL,NULL);
 	
 	MainwindowData window_data{true};
 	auto mainwin=gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -72,7 +75,7 @@ int main()
 			
 		gtk_gl_area_make_current(gl_area); //Activate OpenGL before DTOR runs
 		}
-	gtk_widget_destroy(mainwin);
+	gtk_widget_destroy(mainwin);*/
 	
 	return 0;
 	}
