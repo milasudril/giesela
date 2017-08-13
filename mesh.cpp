@@ -54,7 +54,7 @@ void value_set(const std::string& buffer,WavefrontObj_Vertex& v,int field_count)
 		}
 	}
 	
-static std::pair<WavefrontObj_Face,bool> face_read(FILE* src,const char* stream_src)
+static std::pair<WavefrontObj_Face,bool> face_read(int ch_in,FILE* src,const char* stream_src)
 	{
 	auto vert_count=0;
 	auto field_count=0;
@@ -63,7 +63,6 @@ static std::pair<WavefrontObj_Face,bool> face_read(FILE* src,const char* stream_
 	WavefrontObj_Face ret;
 	while(true)
 		{
-		auto ch_in=getc(src);
 		if(ch_in==EOF)
 			{
 			if(vert_count>=3)
@@ -110,6 +109,7 @@ static std::pair<WavefrontObj_Face,bool> face_read(FILE* src,const char* stream_
 			}
 		else
 			{buffer+=ch_in;}
+		ch_in=getc(src);
 		}
 	}
 
@@ -141,7 +141,7 @@ Mesh Mesh::fromWavefrontObj(FILE* src,const char* stream_src)
 						return true;
 					case 'f':
 						{
-						auto f=face_read(src,stream_src);
+						auto f=face_read(ch_in,src,stream_src);
 						faces.push_back(f.first);
 						if(!f.second) //EOF
 							{return false;}
@@ -166,8 +166,11 @@ Mesh Mesh::fromWavefrontObj(FILE* src,const char* stream_src)
 						return true;
 						
 					default:
+						{
+					//	auto v=vector_read(ch_in);
 						state_current=State::INIT;
 						return true;
+						}
 					}
 				break;
 			case State::COMMENT:
