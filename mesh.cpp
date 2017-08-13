@@ -73,14 +73,14 @@ static std::pair<WavefrontObj_Face,bool> face_read(int ch_in,FILE* src,const cha
 				{throw "Too few vertices in face";}
 			return {ret,false};
 			}
-		else
+
 		if(ch_in=='/')
 			{
 			value_set(buffer,v,field_count);
 			++field_count;
 			buffer.clear();
 			}
-		else
+
 		if(ch_in>=0 && ch_in<=' ') 
 			{
 			value_set(buffer,v,field_count);
@@ -111,6 +111,47 @@ static std::pair<WavefrontObj_Face,bool> face_read(int ch_in,FILE* src,const cha
 			{buffer+=ch_in;}
 		ch_in=getc(src);
 		}
+	}
+	
+static std::pair<glm::vec3,bool> vector_read(int ch_in,FILE* src,const char* stream_src)
+	{
+	glm::vec3 ret{0.0f,0.0f,0.0f};
+	std::string buffer;
+	auto field_count=0;
+	while(true)
+		{
+		if(ch_in==EOF)
+			{
+			if(buffer.length()!=0)
+				{
+				if(field_count>=3)
+					{throw "Too many vector components";}
+				ret[field_count]=atof(buffer.c_str());
+				++field_count;
+				buffer.clear();
+				}
+			return {ret,false};
+			}
+
+		if(ch_in>=0 && ch_in<=' ')
+			{
+			if(buffer.length()!=0)
+				{
+				if(field_count>=3)
+					{throw "Too many vector components";}
+				ret[field_count]=atof(buffer.c_str());
+				++field_count;
+				buffer.clear();
+				}
+				
+			if(ch_in=='\n')
+				{return {ret,true};}
+			}
+		else
+			{buffer+=ch_in;}
+		ch_in=getc(src);
+		}
+	return {ret,true};
 	}
 
 Mesh Mesh::fromWavefrontObj(FILE* src,const char* stream_src)
@@ -157,9 +198,17 @@ Mesh Mesh::fromWavefrontObj(FILE* src,const char* stream_src)
 				switch(ch_in)
 					{
 					case 'n':
-						//normal
+						{
+					//	We must read one more byte here. Otherwise, vector_read
+					//	will try to process 'n'
+						ch_in=getc(src); 
+						auto v=vector_read(ch_in,src,stream_src);
+						normals.push_back(normalize(v.first));
+						if(!v.second)
+							{return false;}
 						state_current=State::INIT;
-						return true;	
+						return true;
+						}
 					case 't':
 						state_current=State::INIT;
 						//uv
@@ -167,7 +216,10 @@ Mesh Mesh::fromWavefrontObj(FILE* src,const char* stream_src)
 						
 					default:
 						{
-					//	auto v=vector_read(ch_in);
+						auto v=vector_read(ch_in,src,stream_src);
+						vertices.push_back(v.first);
+						if(!v.second)
+							{return false;}
 						state_current=State::INIT;
 						return true;
 						}
