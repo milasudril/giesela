@@ -6,11 +6,8 @@
 #ifndef GIESELA_RENDERER_HPP
 #define GIESELA_RENDERER_HPP
 
+#include "glm_giesela.hpp"
 #include <memory>
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_AVX
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 namespace Giesela
 	{

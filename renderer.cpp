@@ -56,9 +56,10 @@ void main()
 		 ,Shader{R"EOF(
 #version 450 core
 out vec3 color;
+layout(location=2) uniform vec3 color_in;
 void main()
 	{
-	color=vec3(1,0,0);
+	color=color_in;
 	}
 )EOF",ShaderType::FRAGMENT_SHADER}
 		));
@@ -68,7 +69,7 @@ void main()
 	
 	m_View=glm::lookAt(m_cam_pos,glm::vec3{0.0f,0.0f,0.0f},glm::vec3{0.0f,0.0f,1.0f});
 	m_Projection=glm::perspective(0.5f*pi,1.0f,0.1f,100.0f);
-
+	glUniform3f(2,0.5f,0.0f,1.0f);
 	}
 
 Renderer::~Renderer()
