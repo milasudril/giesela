@@ -116,8 +116,7 @@ static std::pair<WavefrontObj_Face,bool> face_read(FILE* src,const char* stream_
 Mesh Mesh::fromWavefrontObj(FILE* src,const char* stream_src)
 	{
 	Mesh ret;
-	enum class State:int{INIT,COMMENT};
-	std::string token_in;
+	enum class State:int{INIT,COMMENT,VERTEX};
 	auto state_current=State::INIT;
 	
 	std::vector<glm::vec3> vertices;
@@ -125,40 +124,62 @@ Mesh Mesh::fromWavefrontObj(FILE* src,const char* stream_src)
 	std::vector<glm::vec2> uvs;
 	std::vector<WavefrontObj_Face> faces;
 	
-	while(true)
+	auto parser=[&state_current,&vertices,&normals,&uvs,&faces,src,stream_src](int ch_in)
 		{
-		auto ch_in=getc(src);
 		if(ch_in==EOF)
-			{break;}
+			{return false;}
 		if(ch_in=='\r')
-			{continue;}
+			{return true;}
 
 		switch(state_current)
 			{
 			case State::INIT:
 				switch(ch_in)
 					{
-				//	case 'v':
-					//	state_current=State::VERTEX;
-					//	break;
+					case 'v':
+						state_current=State::VERTEX;
+						return true;
 					case 'f':
 						{
 						auto f=face_read(src,stream_src);
-						if(!f.second) //EOF
-							{break;}
 						faces.push_back(f.first);
+						if(!f.second) //EOF
+							{return false;}
 						}
-						break;
+						return true;
 					default:
 						if(!(ch_in>=0 && ch_in<=' '))
 							{state_current=State::COMMENT;}
+						return true;
+					}
+				break;
+			case State::VERTEX:
+				switch(ch_in)
+					{
+					case 'n':
+						//normal
+						state_current=State::INIT;
+						return true;	
+					case 't':
+						state_current=State::INIT;
+						//uv
+						return true;
+						
+					default:
+						state_current=State::INIT;
+						return true;
 					}
 				break;
 			case State::COMMENT:
 				if(ch_in=='\n')
 					{state_current=State::INIT;}
-				break;
+				return true;
+				
+			default:
+				return false;
 			}
-		}
+		};
+	while(parser(getc(src)));
+
 	return std::move(ret);
 	}
