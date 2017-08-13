@@ -15,6 +15,11 @@ namespace Giesela
 	class Mesh
 		{
 		public:
+			struct Face
+				{
+				uint16_t verts[3];	
+				};
+			
 			static Mesh fromWavefrontObj(FILE* src,const char* stream_src);
 
 			size_t faceCount() const noexcept
@@ -33,8 +38,9 @@ namespace Giesela
 			Mesh()=default;
 			
 			std::vector<glm::vec3> m_vertices;
-			std::vector<int16_t> m_faces;
 			std::vector<glm::vec3> m_normals;
+			std::vector<glm::vec2> m_uvs;
+			std::vector<uint16_t> m_faces;
 		};
 	}
 #endif
