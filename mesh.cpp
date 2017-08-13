@@ -154,6 +154,47 @@ static std::pair<glm::vec3,bool> vector_read(int ch_in,FILE* src,const char* str
 	return {ret,true};
 	}
 
+static std::pair<glm::vec2,bool> vector2_read(int ch_in,FILE* src,const char* stream_src)
+	{
+	glm::vec2 ret{0.0f,0.0f};
+	std::string buffer;
+	auto field_count=0;
+	while(true)
+		{
+		if(ch_in==EOF)
+			{
+			if(buffer.length()!=0)
+				{
+				if(field_count>=2)
+					{throw "Too many vector components";}
+				ret[field_count]=atof(buffer.c_str());
+				++field_count;
+				buffer.clear();
+				}
+			return {ret,false};
+			}
+
+		if(ch_in>=0 && ch_in<=' ')
+			{
+			if(buffer.length()!=0)
+				{
+				if(field_count>=2)
+					{throw "Too many vector components";}
+				ret[field_count]=atof(buffer.c_str());
+				++field_count;
+				buffer.clear();
+				}
+				
+			if(ch_in=='\n')
+				{return {ret,true};}
+			}
+		else
+			{buffer+=ch_in;}
+		ch_in=getc(src);
+		}
+	return {ret,true};
+	}
+	
 Mesh Mesh::fromWavefrontObj(FILE* src,const char* stream_src)
 	{
 	Mesh ret;
@@ -210,10 +251,15 @@ Mesh Mesh::fromWavefrontObj(FILE* src,const char* stream_src)
 						return true;
 						}
 					case 't':
+						{
+						ch_in=getc(src); //	For the sake of consistency with the other cases
+						auto uv=vector2_read(ch_in,src,stream_src);
+						uvs.push_back(uv.first);
+						if(!uv.second)
+							{return false;}
 						state_current=State::INIT;
-						//uv
 						return true;
-						
+						}
 					default:
 						{
 						auto v=vector_read(ch_in,src,stream_src);
