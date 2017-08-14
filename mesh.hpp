@@ -34,7 +34,7 @@ namespace Giesela
 				{return m_vertices.data();}
 				
 			const glm::vec3* normals() const noexcept
-				{return m_vertices.data();}
+				{return m_normals.data();}
 				
 			const glm::vec2* uvs() const noexcept
 				{return m_uvs.data();}

@@ -25,6 +25,7 @@ Shader::Shader(const char* source,ShaderType type)
 		glGetShaderInfoLog(m_handle,std::min(1024,length),NULL,message);
 		glDeleteShader(m_handle);
 	
+		fprintf(stderr,"%s ",message);
 		throw "Failed to compile shader";
 //		exceptionRaise(Error("It was not possible to compile the ",name(type),". ",message));
 		}

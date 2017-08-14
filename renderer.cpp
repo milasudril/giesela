@@ -46,20 +46,52 @@ Renderer::Renderer()
 		  Shader{R"EOF(
 #version 450 core
 layout(location=0) in vec3 vertex_pos;
+layout(location=1) in vec3 vertex_normal;
+
 layout(location=0) uniform mat4 Model;
 layout(location=1) uniform mat4 MVP;
+
+out vec3 fragment_normal;
+out vec3 fragment_pos;
+
 void main()
 	{
 	gl_Position=MVP*vec4(vertex_pos,1.0);
+	fragment_normal=vec3( Model*vec4(vertex_normal,0.0) );
+	fragment_pos=vec3( Model*vec4(vertex_pos,1.0) );
 	}
 )EOF",ShaderType::VERTEX_SHADER}
 		 ,Shader{R"EOF(
 #version 450 core
+
+in vec3 fragment_normal;
+in vec3 fragment_pos;
 out vec3 color;
+
+float sRGB(float x)
+	{
+	if (x <= 0.00031308)
+		{return 12.92 * x;}
+	else
+		{return 1.055*pow(x,(1.0 / 2.4) ) - 0.055;}
+	}
+
+vec3 to_srgb(vec3 color)
+	{
+	return vec3(sRGB(color.r),sRGB(color.g),sRGB(color.b));
+	}
+
 layout(location=2) uniform vec3 color_in;
+layout(location=3) uniform vec3 light_position;
+layout(location=4) uniform float light_intensity;
+
 void main()
 	{
-	color=color_in;
+	vec3 lf=light_position - fragment_pos;
+	float d2=dot(lf,lf);
+	float d=sqrt(d2);
+	float proj=clamp(dot( fragment_normal,lf/d ),0,1);
+	color=to_srgb(light_intensity * color_in*proj/d2 );
 	}
 )EOF",ShaderType::FRAGMENT_SHADER}
 		));
@@ -70,6 +102,9 @@ void main()
 	m_View=glm::lookAt(m_cam_pos,glm::vec3{0.0f,0.0f,0.0f},glm::vec3{0.0f,0.0f,1.0f});
 	m_Projection=glm::perspective(0.5f*pi,1.0f,0.1f,100.0f);
 	glUniform3f(2,0.5f,0.0f,1.0f);
+	
+	glUniform3f(3,-2.0f,-2.0f,3.0f);
+	glUniform1f(4,10.0f);
 	}
 
 Renderer::~Renderer()

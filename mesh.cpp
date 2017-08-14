@@ -371,7 +371,7 @@ Mesh Mesh::fromWavefrontObj(FILE* src,const char* stream_src)
 			{
 			ret.m_vertices[ v.second ]=vertices[ v.first.vertex ];
 			ret.m_uvs[ v.second ]=uvs[ v.first.uv ];
-			ret.m_normals[ v.second ]=vertices[ v.first.normal];
+			ret.m_normals[ v.second ]=normals[ v.first.normal];
 			});
 		}
 	
