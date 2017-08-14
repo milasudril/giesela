@@ -2,6 +2,7 @@
 
 #include "renderer.hpp"
 #include "program.hpp"
+#include "mesh.hpp"
 #include <GL/glew.h>
 #include <cstdio>
 #include <cmath>
@@ -35,12 +36,11 @@ Renderer::Renderer()
 		}
 		
 	glCreateVertexArrays(1,&m_vao);
-	glCreateBuffers(1,&m_vbo);
-	
-	glNamedBufferData(m_vbo,sizeof(g_vertex_buffer_data),g_vertex_buffer_data,GL_STATIC_DRAW);
+	m_vertex_buffer=0;
+
 	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
 	glClearColor(0,0,0,1);
-	glEnableVertexArrayAttrib(m_vao,0);
 	glBindVertexArray(m_vao);
 	m_program.reset(new Program(
 		  Shader{R"EOF(
@@ -65,7 +65,7 @@ void main()
 		));
 	m_program->bind();
 	m_theta=0;
-	m_cam_pos=glm::vec3{0.0f,-3.0f,1.0f};
+	m_cam_pos=glm::vec3{0.0f,-3.0f,2.0f};
 	
 	m_View=glm::lookAt(m_cam_pos,glm::vec3{0.0f,0.0f,0.0f},glm::vec3{0.0f,0.0f,1.0f});
 	m_Projection=glm::perspective(0.5f*pi,1.0f,0.1f,100.0f);
@@ -75,7 +75,7 @@ void main()
 Renderer::~Renderer()
 	{
 	glDisableVertexArrayAttrib(m_vao,0);
-	glDeleteBuffers(1,&m_vbo);
+
 	glDeleteVertexArrays(1,&m_vao);
 	}
 	
@@ -84,17 +84,55 @@ void Renderer::viewport(int width,int height) noexcept
 	m_Projection=glm::perspective(0.5f*pi
 		,static_cast<float>(width)/static_cast<float>(height),0.1f,100.0f);
 	}
+
+void Renderer::mesh(const Mesh& m)
+	{
+	if(m_vertex_buffer!=0)
+		{
+		for(int k=0;k<3;++k)
+			{glDisableVertexArrayAttrib(m_vao,k);}
+		glDeleteBuffers(1,&m_vertex_buffer);
+		glDeleteBuffers(1,&m_normal_buffer);
+		glDeleteBuffers(1,&m_uv_buffer);
+		glDeleteBuffers(1,&m_index_buffer);
+		}
+		
+	glCreateBuffers(1,&m_vertex_buffer);
+	glCreateBuffers(1,&m_normal_buffer);
+	glCreateBuffers(1,&m_uv_buffer);
+	glCreateBuffers(1,&m_index_buffer);
+	
+	glNamedBufferData(m_vertex_buffer,sizeof(glm::vec3)*m.vertexCount(),m.vertices(),GL_STATIC_DRAW);
+	glNamedBufferData(m_normal_buffer,sizeof(glm::vec3)*m.vertexCount(),m.normals(),GL_STATIC_DRAW);
+	glNamedBufferData(m_uv_buffer,sizeof(glm::vec2)*m.vertexCount(),m.uvs(),GL_STATIC_DRAW);
+	glNamedBufferData(m_index_buffer,sizeof(Mesh::Face)*m.faceCount(),m.faces(),GL_STATIC_DRAW);
+	m_n_faces=m.faceCount();
+
+	glBindVertexArray(m_vao);
+	glBindBuffer(GL_ARRAY_BUFFER, m_vertex_buffer);
+//	glBindBuffer(GL_ARRAY_BUFFER, m_normal_buffer);
+//	glBindBuffer(GL_ARRAY_BUFFER, m_uv_buffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m_index_buffer);
+	for(int k=0;k<3;++k)
+		{glEnableVertexArrayAttrib(m_vao,k);}
+	glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,nullptr);
+	glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,0,nullptr);
+	glVertexAttribPointer(2,2,GL_FLOAT,GL_FALSE,0,nullptr);
+	}
 	
 void Renderer::render() noexcept
 	{
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-	glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,nullptr);
-	auto theta=2.0f*pi*(m_theta/65536.0f);
-	auto Model=glm::rotate(glm::mat4{},theta,glm::vec3{0.0f,0.0f,1.0f});
-	auto MVP=m_Projection*m_View*Model;
-	glUniformMatrix4fv(0, 1, GL_FALSE, &Model[0][0]);
-	glUniformMatrix4fv(1, 1, GL_FALSE, &MVP[0][0]);
-	glDrawArrays(GL_TRIANGLES,0,3);
-	m_theta+=64;
+	if(m_vertex_buffer!=0)
+		{
+		auto theta=2.0f*pi*(m_theta/65536.0f);
+		auto Model=glm::rotate(glm::mat4{},theta,glm::vec3{0.0f,0.0f,1.0f});
+		auto MVP=m_Projection*m_View*Model;
+		glUniformMatrix4fv(0, 1, GL_FALSE, &Model[0][0]);
+		glUniformMatrix4fv(1, 1, GL_FALSE, &MVP[0][0]);
+		glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+		glDrawElements(GL_TRIANGLES,3*m_n_faces,GL_UNSIGNED_SHORT,nullptr);
+	
+		m_theta+=64;
+		}
 	}

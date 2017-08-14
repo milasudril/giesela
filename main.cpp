@@ -48,9 +48,8 @@ int main()
 	{
 	try
 		{
-		auto test=Mesh::fromWavefrontObj(stdin,"stdin");
-			
-	/*	gtk_init(NULL,NULL);
+		gtk_disable_setlocale(); //GTK may break parsers
+		gtk_init(NULL,NULL);
 		
 		MainwindowData window_data{true};
 		auto mainwin=gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -69,6 +68,10 @@ int main()
 
 			gtk_container_add(GTK_CONTAINER(mainwin),GTK_WIDGET(gl_area));
 			gtk_widget_show_all(mainwin);
+			
+			assert(renderer);
+			renderer->mesh(Mesh::fromWavefrontObj(stdin,"stdin"));
+			
 			while(window_data.m_running)
 				{
 				gtk_gl_area_queue_render(gl_area);
@@ -77,7 +80,7 @@ int main()
 				
 			gtk_gl_area_make_current(gl_area); //Activate OpenGL before DTOR runs
 			}
-		gtk_widget_destroy(mainwin);*/
+		gtk_widget_destroy(mainwin);
 		}
 	catch(const char* message)
 		{fprintf(stderr,"Error: %s\n", message);}

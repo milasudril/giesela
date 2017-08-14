@@ -20,6 +20,8 @@ namespace Giesela
 				uint16_t verts[3];	
 				};
 			
+			static_assert(sizeof(Face)==3*sizeof(uint16_t),"");
+			
 			static Mesh fromWavefrontObj(FILE* src,const char* stream_src);
 
 			size_t faceCount() const noexcept
@@ -33,6 +35,12 @@ namespace Giesela
 				
 			const glm::vec3* normals() const noexcept
 				{return m_vertices.data();}
+				
+			const glm::vec2* uvs() const noexcept
+				{return m_uvs.data();}
+				
+			const Face* faces() const noexcept
+				{return m_faces.data();}
 			
 		private:
 			Mesh()=default;

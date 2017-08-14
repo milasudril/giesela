@@ -12,6 +12,7 @@
 namespace Giesela
 	{
 	class Program;
+	class Mesh;
 	class Renderer
 		{
 		public:
@@ -20,6 +21,7 @@ namespace Giesela
 			
 			void render() noexcept;
 			void viewport(int width,int height) noexcept;
+			void mesh(const Mesh& m);
 			
 		private:
 			uint16_t m_theta;
@@ -30,7 +32,11 @@ namespace Giesela
 			glm::mat4 m_Projection;
 			
 			unsigned int m_vao;
-			unsigned int m_vbo;
+			unsigned int m_vertex_buffer;
+			unsigned int m_normal_buffer;
+			unsigned int m_uv_buffer;
+			unsigned int m_index_buffer;
+			unsigned int m_n_faces;
 		};
 	}
 

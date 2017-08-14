@@ -362,12 +362,16 @@ Mesh Mesh::fromWavefrontObj(FILE* src,const char* stream_src)
 				}
 			ret.m_faces.push_back(f);
 			});
+		
+		ret.m_vertices.resize(verts_uniq.size());
+		ret.m_uvs.resize(verts_uniq.size());
+		ret.m_normals.resize(verts_uniq.size());
 		std::for_each(verts_uniq.begin(),verts_uniq.end()
 			,[&ret,&vertices,&uvs,&normals](const std::pair<WavefrontObj_Vertex,size_t>& v)
 			{
-			ret.m_vertices.push_back(vertices[ v.first.vertex ]);			
-			ret.m_uvs.push_back(uvs[ v.first.uv ]);
-			ret.m_normals.push_back(normals[ v.first.normal ]);
+			ret.m_vertices[ v.second ]=vertices[ v.first.vertex ];
+			ret.m_uvs[ v.second ]=uvs[ v.first.uv ];
+			ret.m_normals[ v.second ]=vertices[ v.first.normal];
 			});
 		}
 	
