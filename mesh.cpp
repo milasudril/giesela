@@ -80,7 +80,7 @@ static std::pair<WavefrontObj_Face,bool> face_read(int ch_in,FILE* src,const cha
 			++field_count;
 			buffer.clear();
 			}
-
+		else
 		if(ch_in>=0 && ch_in<=' ') 
 			{
 			value_set(buffer,v,field_count);
@@ -195,6 +195,21 @@ static std::pair<glm::vec2,bool> vector2_read(int ch_in,FILE* src,const char* st
 	return {ret,true};
 	}
 	
+static void validate(const WavefrontObj_Face& face
+	,int n_verts,int n_uvs,int n_normals
+	,const char* stream_src,size_t face_index)
+	{
+	for(int k=0;k<3;++k)
+		{
+		if(face.verts[k].vertex<=0 || face.verts[k].vertex > n_verts)
+			{throw "Invalid vertex index";}
+		if(face.verts[k].uv<=0 || face.verts[k].uv > n_uvs)
+			{throw "Invalid uv index";}
+		if(face.verts[k].normal<=0 || face.verts[k].normal > n_normals)
+			{throw "Invalid normal index";}
+		}
+	}
+	
 Mesh Mesh::fromWavefrontObj(FILE* src,const char* stream_src)
 	{
 	Mesh ret;
@@ -223,6 +238,7 @@ Mesh Mesh::fromWavefrontObj(FILE* src,const char* stream_src)
 						return true;
 					case 'f':
 						{
+						ch_in=getc(src); //consume next byte
 						auto f=face_read(ch_in,src,stream_src);
 						faces.push_back(f.first);
 						if(!f.second) //EOF
@@ -281,6 +297,28 @@ Mesh Mesh::fromWavefrontObj(FILE* src,const char* stream_src)
 			}
 		};
 	while(parser(getc(src)));
-
+	
+		{
+		auto n_verts=vertices.size();
+		auto n_uvs=uvs.size();
+		auto n_normals=normals.size();
+		size_t count=0;
+		std::for_each(faces.begin(),faces.end()
+			,[n_verts,n_uvs,n_normals,&count,stream_src](const WavefrontObj_Face& face)
+			{
+			validate(face,n_verts,n_uvs,n_normals,stream_src,count);
+			++count;
+			});
+		}
+	
+/*	std::map<WavefrontObj_Vertex,int> vert_uniq;
+	std::for_each(faces.begin(),faces.end(),[&vert_uniq](const WavefrontObj_Face& face)
+		{
+		for(int k=0;k<3;++k)
+			{
+			
+			}
+		});*/
+	
 	return std::move(ret);
 	}

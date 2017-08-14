@@ -46,36 +46,40 @@ static void resize(GtkGLArea* gl_area,int width,int height,void* user_data)
 	
 int main()
 	{
-	auto test=Mesh::fromWavefrontObj(stdin,"stdin");
-		
-/*	gtk_init(NULL,NULL);
-	
-	MainwindowData window_data{true};
-	auto mainwin=gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	g_signal_connect(mainwin,"delete-event",G_CALLBACK(delete_callback),&window_data);
-	
-	auto gl_area=reinterpret_cast<GtkGLArea*>( gtk_gl_area_new() );
-	gtk_gl_area_set_has_depth_buffer(gl_area,TRUE);
-	gtk_gl_area_set_has_stencil_buffer(gl_area,TRUE);
-	gtk_gl_area_set_has_alpha(gl_area,FALSE);
-	gtk_gl_area_set_required_version(gl_area,4,5);
+	try
 		{
-		std::unique_ptr<Renderer> renderer;
-		g_signal_connect(gl_area,"realize",G_CALLBACK(gl_init),&renderer);
-		g_signal_connect(gl_area,"render", G_CALLBACK(render),&renderer);
-		g_signal_connect(gl_area,"resize", G_CALLBACK(resize),&renderer);
-
-		gtk_container_add(GTK_CONTAINER(mainwin),GTK_WIDGET(gl_area));
-		gtk_widget_show_all(mainwin);
-		while(window_data.m_running)
-			{
-			gtk_gl_area_queue_render(gl_area);
-			gtk_main_iteration_do(TRUE);
-			}
+		auto test=Mesh::fromWavefrontObj(stdin,"stdin");
 			
-		gtk_gl_area_make_current(gl_area); //Activate OpenGL before DTOR runs
+	/*	gtk_init(NULL,NULL);
+		
+		MainwindowData window_data{true};
+		auto mainwin=gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		g_signal_connect(mainwin,"delete-event",G_CALLBACK(delete_callback),&window_data);
+		
+		auto gl_area=reinterpret_cast<GtkGLArea*>( gtk_gl_area_new() );
+		gtk_gl_area_set_has_depth_buffer(gl_area,TRUE);
+		gtk_gl_area_set_has_stencil_buffer(gl_area,TRUE);
+		gtk_gl_area_set_has_alpha(gl_area,FALSE);
+		gtk_gl_area_set_required_version(gl_area,4,5);
+			{
+			std::unique_ptr<Renderer> renderer;
+			g_signal_connect(gl_area,"realize",G_CALLBACK(gl_init),&renderer);
+			g_signal_connect(gl_area,"render", G_CALLBACK(render),&renderer);
+			g_signal_connect(gl_area,"resize", G_CALLBACK(resize),&renderer);
+
+			gtk_container_add(GTK_CONTAINER(mainwin),GTK_WIDGET(gl_area));
+			gtk_widget_show_all(mainwin);
+			while(window_data.m_running)
+				{
+				gtk_gl_area_queue_render(gl_area);
+				gtk_main_iteration_do(TRUE);
+				}
+				
+			gtk_gl_area_make_current(gl_area); //Activate OpenGL before DTOR runs
+			}
+		gtk_widget_destroy(mainwin);*/
 		}
-	gtk_widget_destroy(mainwin);*/
-	
+	catch(const char* message)
+		{fprintf(stderr,"Error: %s\n", message);}
 	return 0;
 	}
