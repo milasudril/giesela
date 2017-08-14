@@ -23,7 +23,7 @@ namespace Giesela
 			static Mesh fromWavefrontObj(FILE* src,const char* stream_src);
 
 			size_t faceCount() const noexcept
-				{return m_faces.size()/3;}
+				{return m_faces.size();}
 			
 			size_t vertexCount() const noexcept
 				{return m_vertices.size();}
@@ -40,7 +40,7 @@ namespace Giesela
 			std::vector<glm::vec3> m_vertices;
 			std::vector<glm::vec3> m_normals;
 			std::vector<glm::vec2> m_uvs;
-			std::vector<uint16_t> m_faces;
+			std::vector<Face> m_faces;
 		};
 	}
 #endif

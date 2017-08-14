@@ -5,28 +5,38 @@
 #include "mesh.hpp"
 #include <string>
 #include <algorithm>
+#include <map>
 
 using namespace Giesela;
 
-static uint16_t to_uint16_checked(const char* x)
+namespace
 	{
-	auto val=atoll(x);
-	if(val>0xffff || val<0)
-		{throw "Value out of range";}
-	return val;
+	struct WavefrontObj_Vertex
+		{
+		int vertex;
+		int uv;
+		int normal;
+		
+		bool operator<(const WavefrontObj_Vertex& v) const noexcept
+			{
+			if(vertex<v.vertex)
+				{return 1;}
+			
+			if(vertex==v.vertex && uv<v.uv)
+				{return 1;}
+			
+			if(uv==v.uv && normal<v.normal)
+				{return 1;}
+			
+			return 0;
+			}
+		};
+		
+	struct WavefrontObj_Face
+		{
+		WavefrontObj_Vertex verts[3];
+		};
 	}
-	
-struct WavefrontObj_Vertex
-	{
-	int vertex;
-	int uv;
-	int normal;
-	};
-	
-struct WavefrontObj_Face
-	{
-	WavefrontObj_Vertex verts[3];
-	};
 
 static int to_int_checked(const char* x)
 	{
@@ -210,6 +220,13 @@ static void validate(const WavefrontObj_Face& face
 		}
 	}
 	
+static uint16_t to_uint16_checked(size_t x,const char* context)
+	{
+	if(x>0xffff)
+		{throw "Value out of range";}
+	return static_cast<uint16_t>(x);
+	}
+	
 Mesh Mesh::fromWavefrontObj(FILE* src,const char* stream_src)
 	{
 	Mesh ret;
@@ -299,6 +316,7 @@ Mesh Mesh::fromWavefrontObj(FILE* src,const char* stream_src)
 	while(parser(getc(src)));
 	
 		{
+	//	Validate input data
 		auto n_verts=vertices.size();
 		auto n_uvs=uvs.size();
 		auto n_normals=normals.size();
@@ -310,15 +328,48 @@ Mesh Mesh::fromWavefrontObj(FILE* src,const char* stream_src)
 			++count;
 			});
 		}
-	
-/*	std::map<WavefrontObj_Vertex,int> vert_uniq;
-	std::for_each(faces.begin(),faces.end(),[&vert_uniq](const WavefrontObj_Face& face)
+		
 		{
-		for(int k=0;k<3;++k)
+	//	Normalize indices
+		std::for_each(faces.begin(),faces.end(),[](WavefrontObj_Face& face)
 			{
-			
-			}
-		});*/
+			for(int k=0;k<3;++k)
+				{
+				face.verts[k].vertex-=1;
+				face.verts[k].uv-=1;
+				face.verts[k].normal-=1;
+				}
+			});
+		}
+
+		{
+	//	Make index
+		std::map<WavefrontObj_Vertex,size_t> verts_uniq;
+		std::for_each(faces.begin(),faces.end()
+			,[&verts_uniq,&ret,stream_src](const WavefrontObj_Face& face)
+			{
+			Face f;
+			for(int k=0;k<3;++k)
+				{
+				auto i=verts_uniq.find(face.verts[k]);
+				auto vertex_index=verts_uniq.size();
+				if(i==verts_uniq.end())
+					{verts_uniq.insert({face.verts[k],vertex_index});}
+				else
+					{vertex_index=i->second;}
+					
+				f.verts[k]=to_uint16_checked( vertex_index,stream_src);
+				}
+			ret.m_faces.push_back(f);
+			});
+		std::for_each(verts_uniq.begin(),verts_uniq.end()
+			,[&ret,&vertices,&uvs,&normals](const std::pair<WavefrontObj_Vertex,size_t>& v)
+			{
+			ret.m_vertices.push_back(vertices[ v.first.vertex ]);			
+			ret.m_uvs.push_back(uvs[ v.first.uv ]);
+			ret.m_normals.push_back(normals[ v.first.normal ]);
+			});
+		}
 	
 	return std::move(ret);
 	}
