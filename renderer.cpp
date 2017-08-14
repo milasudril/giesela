@@ -110,14 +110,14 @@ void Renderer::mesh(const Mesh& m)
 
 	glBindVertexArray(m_vao);
 	glBindBuffer(GL_ARRAY_BUFFER, m_vertex_buffer);
-//	glBindBuffer(GL_ARRAY_BUFFER, m_normal_buffer);
-//	glBindBuffer(GL_ARRAY_BUFFER, m_uv_buffer);
+	glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,nullptr);
+	glBindBuffer(GL_ARRAY_BUFFER, m_normal_buffer);
+	glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,0,nullptr);
+	glBindBuffer(GL_ARRAY_BUFFER, m_uv_buffer);
+	glVertexAttribPointer(2,2,GL_FLOAT,GL_FALSE,0,nullptr);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m_index_buffer);
 	for(int k=0;k<3;++k)
 		{glEnableVertexArrayAttrib(m_vao,k);}
-	glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,nullptr);
-	glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,0,nullptr);
-	glVertexAttribPointer(2,2,GL_FLOAT,GL_FALSE,0,nullptr);
 	}
 	
 void Renderer::render() noexcept
@@ -130,9 +130,7 @@ void Renderer::render() noexcept
 		auto MVP=m_Projection*m_View*Model;
 		glUniformMatrix4fv(0, 1, GL_FALSE, &Model[0][0]);
 		glUniformMatrix4fv(1, 1, GL_FALSE, &MVP[0][0]);
-		glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 		glDrawElements(GL_TRIANGLES,3*m_n_faces,GL_UNSIGNED_SHORT,nullptr);
-	
 		m_theta+=64;
 		}
 	}
