@@ -1,8 +1,9 @@
-//@	{"targets":[{"name":"giesela","type":"application","pkgconfig_libs":["gtk+-3.0","glew"]}]}
+//@	{"targets":[{"name":"giesela","type":"application","pkgconfig_libs":["gtk+-3.0","glew","gtksourceview-3.0"]}]}
 
 #include "renderer.hpp"
 #include "mesh.hpp"
 #include <gtk/gtk.h>
+#include <gtksourceview/gtksource.h>
 #include <memory>
 #include <cassert>
 
@@ -44,6 +45,21 @@ static void resize(GtkGLArea* gl_area,int width,int height,void* user_data)
 	(*self)->viewport(width,height);
 	}
 	
+static GtkWidget* orth_paned(GtkWidget* main,GtkWidget* a,GtkWidget* b)
+	{
+	auto ret=gtk_paned_new(GTK_ORIENTATION_VERTICAL);
+	
+	auto paned_inner=gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
+	
+	gtk_paned_add1(GTK_PANED(paned_inner),a);
+	gtk_paned_add2(GTK_PANED(paned_inner),b);
+	gtk_paned_add1(GTK_PANED(ret),paned_inner);
+	gtk_paned_add2(GTK_PANED(ret),main);
+	
+	return ret;
+	}
+
+	
 int main()
 	{
 	try
@@ -55,7 +71,14 @@ int main()
 		auto mainwin=gtk_window_new(GTK_WINDOW_TOPLEVEL);
 		g_signal_connect(mainwin,"delete-event",G_CALLBACK(delete_callback),&window_data);
 		
+
+		
+		auto log=gtk_source_view_new();
+		auto src_view=gtk_source_view_new();
 		auto gl_area=reinterpret_cast<GtkGLArea*>( gtk_gl_area_new() );
+		gtk_widget_set_size_request(GTK_WIDGET(gl_area),1,1); //Force GTK to send realize signal
+		auto panels=orth_paned(log,src_view,GTK_WIDGET(gl_area));
+		
 		gtk_gl_area_set_has_depth_buffer(gl_area,TRUE);
 		gtk_gl_area_set_has_stencil_buffer(gl_area,TRUE);
 		gtk_gl_area_set_has_alpha(gl_area,FALSE);
@@ -65,8 +88,8 @@ int main()
 			g_signal_connect(gl_area,"realize",G_CALLBACK(gl_init),&renderer);
 			g_signal_connect(gl_area,"render", G_CALLBACK(render),&renderer);
 			g_signal_connect(gl_area,"resize", G_CALLBACK(resize),&renderer);
-
-			gtk_container_add(GTK_CONTAINER(mainwin),GTK_WIDGET(gl_area));
+			
+			gtk_container_add(GTK_CONTAINER(mainwin),GTK_WIDGET(panels));			
 			gtk_widget_show_all(mainwin);
 			
 			assert(renderer);
