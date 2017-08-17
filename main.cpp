@@ -71,8 +71,6 @@ int main()
 		auto mainwin=gtk_window_new(GTK_WINDOW_TOPLEVEL);
 		g_signal_connect(mainwin,"delete-event",G_CALLBACK(delete_callback),&window_data);
 		
-
-		
 		auto log=gtk_source_view_new();
 		auto src_view=gtk_source_view_new();
 		auto gl_area=reinterpret_cast<GtkGLArea*>( gtk_gl_area_new() );
