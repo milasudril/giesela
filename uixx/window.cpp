@@ -163,10 +163,10 @@ Window::Impl::Impl(const char* ti,Container* owner):Window(*this),m_id(0)
 	g_signal_connect(widget,"delete-event",G_CALLBACK(delete_callback),this);
 	g_signal_connect(widget,"key-press-event",G_CALLBACK(key_down),this);
 	g_signal_connect(widget,"key-release-event",G_CALLBACK(key_up),this);
-	g_signal_connect(widget,"button-press-event",G_CALLBACK(mouse_down),this);
+//	g_signal_connect(widget,"button-press-event",G_CALLBACK(mouse_down),this);
 	g_signal_connect(widget,"focus-in-event",G_CALLBACK(focus_in_callback),this);
 	m_focus={this,focus_out};
-	g_object_set_data(G_OBJECT(widget),"anja-focus-sink",&m_focus);
+	g_object_set_data(G_OBJECT(widget),"uixx-focus-sink",&m_focus);
 
 
 	m_handle=GTK_WINDOW(widget);
@@ -178,7 +178,7 @@ Window::Impl::Impl(const char* ti,Container* owner):Window(*this),m_id(0)
 
 Window::Impl::~Impl()
 	{
-	g_object_set_data(G_OBJECT(m_handle),"anja-focus-sink",nullptr);
+	g_object_set_data(G_OBJECT(m_handle),"uixx-focus-sink",nullptr);
 	m_impl=nullptr;
 	r_cb_obj=nullptr;
 	gtk_widget_destroy(GTK_WIDGET(m_handle));

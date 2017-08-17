@@ -47,6 +47,9 @@ class SourceView::Impl:private SourceView
 			gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(m_handle)
 				,status?GTK_WRAP_WORD:GTK_WRAP_NONE);
 			}
+			
+		void focus()
+			{gtk_widget_grab_focus(GTK_WIDGET(m_handle));}
 
 	private:
 		Callback r_cb;
@@ -61,7 +64,7 @@ class SourceView::Impl:private SourceView
 		static gboolean focus_in_callback(GtkWidget* widget,GdkEvent* event,gpointer user_data)
 			{
 			auto root=gtk_widget_get_toplevel(widget);
-			auto sink=reinterpret_cast<const FocusSink*>( g_object_get_data(G_OBJECT(root),"anja-focus-sink") );
+			auto sink=reinterpret_cast<const FocusSink*>( g_object_get_data(G_OBJECT(root),"ui-focus-sink") );
 			if(sink!=nullptr)
 				{sink->action(sink->object);}
 			return TRUE;
@@ -107,6 +110,12 @@ int SourceView::id() const noexcept
 SourceView& SourceView::wordwrap(bool status)
 	{
 	m_impl->wordwrap(status);
+	return *this;
+	}
+	
+SourceView& SourceView::focus()
+	{
+	m_impl->focus();
 	return *this;
 	}
 

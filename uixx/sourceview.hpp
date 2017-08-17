@@ -52,6 +52,9 @@ namespace UIxx
 			int id() const noexcept;
 
 			SourceView& wordwrap(bool status);
+			
+			SourceView& focus();
+
 
 		protected:
 			class Impl;

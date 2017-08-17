@@ -99,7 +99,7 @@ Checkbox::Impl::~Impl()
 gboolean Checkbox::Impl::focus_in_callback(GtkWidget* widget,GdkEvent* event,gpointer user_data)
 	{
 	auto root=gtk_widget_get_toplevel(widget);
-	auto sink=reinterpret_cast<const FocusSink*>( g_object_get_data(G_OBJECT(root),"anja-focus-sink") );
+	auto sink=reinterpret_cast<const FocusSink*>( g_object_get_data(G_OBJECT(root),"uixx-focus-sink") );
 	if(sink!=nullptr)
 		{sink->action(sink->object);}
 	return TRUE;

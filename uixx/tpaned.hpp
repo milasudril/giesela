@@ -22,7 +22,16 @@ namespace UIxx
 				m_layout(cnt,vertical,std::forward<MainWidgetMaker>(widget_main)
 					,std::forward<SubwidgetAMaker>(widget_a),std::forward<SubwidgetBMaker>(widget_b))
 				{}
-
+				
+			auto& main() noexcept	
+				{return m_layout.m_main;}
+			
+			auto& a() noexcept	
+				{return m_layout.m_a;}
+				
+			auto& b() noexcept	
+				{return m_layout.m_b;}
+			
 		private:
 			template<TPanedLayout layout,bool dummy=0>
 			struct Layout;
