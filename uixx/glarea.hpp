@@ -54,19 +54,19 @@ namespace UIxx
 				
 			struct Vtable
 				{
-				Vtable() noexcept;
+				Vtable()=default;
 
 				template<class Callback,class IdType>
 				explicit Vtable(Callback& cb,IdType) noexcept
 					{
 					render=[](void* cb_obj,GLArea& source)
 						{reinterpret_cast<Callback*>(cb_obj)->render(source,static_cast<IdType>(source.id()));};
-					resize=[](void* cb_obj,GLArea& source)
-						{reinterpret_cast<Callback*>(cb_obj)->resize(source,static_cast<IdType>(source.id()));};
+					resize=[](void* cb_obj,GLArea& source,int width,int height)
+						{reinterpret_cast<Callback*>(cb_obj)->resize(source,static_cast<IdType>(source.id()),width,height);};
 					}
 					
 				void (*render)(void* cb_obj,GLArea& source);
-				void (*resize)(void* cb_obj,GLArea& source);
+				void (*resize)(void* cb_obj,GLArea& source,int width,int height);
 				};
 
 			GLArea& callback(const Vtable& vt,void* cb_obj,int id);

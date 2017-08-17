@@ -53,17 +53,18 @@ class GLArea::Impl final:private GLArea
 			return TRUE;
 			}
 			
-		static gboolean resize(GtkGLArea* gl_area,GdkGLContext* context,void* user_data)
+		static gboolean resize(GtkGLArea* gl_area,int width,int height,void* user_data)
 			{
 			auto self=reinterpret_cast<Impl*>(user_data);
 			if(self->r_cb_obj!=nullptr)
-				{self->m_vt.resize(self->r_cb_obj,*self);}
+				{self->m_vt.resize(self->r_cb_obj,*self,width,height);}
 			return TRUE;
 			}
 	};
 	
 GLArea::Impl::Impl(Container& cnt):GLArea(*this)
 	{
+	r_cb_obj=nullptr;
 	auto gl_area=reinterpret_cast<GtkGLArea*>( gtk_gl_area_new() );
 	g_signal_connect(gl_area,"render", G_CALLBACK(render),this);
 	g_signal_connect(gl_area,"resize", G_CALLBACK(resize),this);
