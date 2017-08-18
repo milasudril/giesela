@@ -23,9 +23,9 @@ class Application
 				,[](UIxx::Container& cnt)
 					{return UIxx::GLArea(cnt);})
 			{
+			m_mainwin.callback(*this,0).show();
 			m_tp.main().content("Log goes here");
 			m_tp.a().content("Source goes here").lineNumbers(true).focus();
-			m_mainwin.callback(*this,0).show();
 			}
 		
 		UIxx::UiContext::RunStatus idle(UIxx::UiContext& context)
