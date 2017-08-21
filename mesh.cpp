@@ -3,6 +3,7 @@
 //@	}
 
 #include "mesh.hpp"
+#include "floatconv.hpp"
 #include <string>
 #include <algorithm>
 #include <map>
@@ -136,7 +137,7 @@ static std::pair<glm::vec3,bool> vector_read(int ch_in,FILE* src,const char* str
 				{
 				if(field_count>=3)
 					{throw "Too many vector components";}
-				ret[field_count]=atof(buffer.c_str());
+				ret[field_count]=convert(buffer.c_str());
 				++field_count;
 				buffer.clear();
 				}

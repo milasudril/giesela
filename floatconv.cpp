@@ -5,9 +5,7 @@
 #include <cstdlib>
 #include <string>
 
-using namespace UIxx;
-
-bool UIxx::convert(const char* string,double& result)
+bool convert(const char* string,double& result)
 	{
 	auto ptr=string;
 	bool got_separator=0;
