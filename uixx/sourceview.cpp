@@ -50,6 +50,12 @@ class SourceView::Impl:private SourceView
 			
 		void focus()
 			{gtk_widget_grab_focus(GTK_WIDGET(m_handle));}
+			
+		void minSize(int width,int height)
+			{
+			gtk_widget_set_size_request(GTK_WIDGET(m_scroll),width,height);
+			}
+		
 
 	private:
 		Callback r_cb;
@@ -116,6 +122,12 @@ SourceView& SourceView::wordwrap(bool status)
 SourceView& SourceView::focus()
 	{
 	m_impl->focus();
+	return *this;
+	}
+	
+SourceView& SourceView::minSize(int width,int height)
+	{
+	m_impl->minSize(width,height);
 	return *this;
 	}
 

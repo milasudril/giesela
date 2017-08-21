@@ -16,12 +16,10 @@ using namespace Giesela;
 struct SourcePanel
 	{
 	SourcePanel(UIxx::Container& cnt):m_box(cnt,true)
-		,m_label(m_box,"Fragment shader")
+		,m_label(m_box,"Fragment shader:")
 		,m_src(m_box.insertMode({0,UIxx::Box::FILL|UIxx::Box::EXPAND}))
 		,m_compile(m_box.insertMode({0,0}),"Compile")
-		{
-		m_label.alignment(0.0f);
-		}
+		{}
 		
 	UIxx::Box m_box;
 		UIxx::Label m_label;
@@ -41,10 +39,14 @@ class Application
 				,[](UIxx::Container& cnt)
 					{return UIxx::GLArea(cnt);})
 			{
-			m_mainwin.callback(*this,0).show();
-			m_tp.main().content("Log goes here");
+			m_tp.b().minSize(320,220).versionRequest(4,5).callback(*this,0);
 			m_tp.a().m_src.content("Source goes here").lineNumbers(true)
-				.highlight(".glslf").focus();
+				.highlight(".glslf").minSize(500,400);
+			m_tp.a().m_label.alignment(0.0f);
+			m_tp.main().content("Log goes here");
+			
+			m_mainwin.callback(*this,0).show();
+			m_tp.a().m_src.focus();
 			}
 		
 		UIxx::UiContext::RunStatus idle(UIxx::UiContext& context)
@@ -62,6 +64,19 @@ class Application
 		void focusIn(UIxx::Window&,int){}
 		void focusOut(UIxx::Window&,int){}
 		
+		void render(UIxx::GLArea& area,int id)
+			{m_renderer->render();}
+			
+		void resize(UIxx::GLArea& area,int id,int width,int height)
+			{m_renderer->viewport(width,height);}
+			
+		void realize(UIxx::GLArea& area,int id)
+			{
+			fprintf(stderr,"Hello\n");
+			area.glActivate();
+			m_renderer.reset(new Renderer());
+			}
+		
 	private:
 		UIxx::UiContext& r_ctx;
 		UIxx::Window m_mainwin;
@@ -69,6 +84,8 @@ class Application
 				,UIxx::SourceView
 				,SourcePanel
 				,UIxx::GLArea> m_tp;
+				
+		std::unique_ptr<Renderer> m_renderer;
 	};
 	
 int main()

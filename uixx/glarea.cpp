@@ -60,6 +60,13 @@ class GLArea::Impl final:private GLArea
 				{self->m_vt.resize(self->r_cb_obj,*self,width,height);}
 			return TRUE;
 			}
+			
+		static void realize(GtkWidget* gl_area,void* user_data)
+			{
+			auto self=reinterpret_cast<Impl*>(user_data);
+			if(self->r_cb_obj!=nullptr)
+				{self->m_vt.realize(self->r_cb_obj,*self);}
+			}
 	};
 	
 GLArea::Impl::Impl(Container& cnt):GLArea(*this)
@@ -68,6 +75,7 @@ GLArea::Impl::Impl(Container& cnt):GLArea(*this)
 	auto gl_area=reinterpret_cast<GtkGLArea*>( gtk_gl_area_new() );
 	g_signal_connect(gl_area,"render", G_CALLBACK(render),this);
 	g_signal_connect(gl_area,"resize", G_CALLBACK(resize),this);
+	g_signal_connect(gl_area,"realize", G_CALLBACK(realize),this);
 	gtk_gl_area_set_has_depth_buffer(gl_area,TRUE);
 	gtk_gl_area_set_has_stencil_buffer(gl_area,TRUE);
 	gtk_gl_area_set_has_alpha(gl_area,TRUE);
@@ -123,3 +131,10 @@ GLArea& GLArea::versionRequest(int major,int minor)
 	m_impl->versionRequest(major,minor);
 	return *this;
 	}
+GLArea& GLArea::callback(const Vtable& vt,void* cb_obj,int id)
+	{
+	m_impl->callback(vt,cb_obj,id);
+	return *this;
+	}
+
+

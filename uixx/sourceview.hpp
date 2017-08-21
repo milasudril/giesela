@@ -55,6 +55,7 @@ namespace UIxx
 			
 			SourceView& focus();
 
+			SourceView& minSize(int width,int height);
 
 		protected:
 			class Impl;
