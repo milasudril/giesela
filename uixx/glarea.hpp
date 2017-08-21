@@ -44,6 +44,8 @@ namespace UIxx
 			GLArea& glActivate();
 			
 			GLArea& versionRequest(int major,int minor);
+			
+			GLArea& redraw() noexcept;
 
 		private:
 			class Impl;

@@ -38,6 +38,9 @@ class GLArea::Impl final:private GLArea
 			
 		void versionRequest(int major,int minor)
 			{gtk_gl_area_set_required_version(m_handle,major,minor);}
+			
+		void redraw() noexcept
+			{gtk_widget_queue_draw(GTK_WIDGET(m_handle));}
 
 	private:
 		int m_id;
@@ -78,7 +81,6 @@ GLArea::Impl::Impl(Container& cnt):GLArea(*this)
 	g_signal_connect(gl_area,"realize", G_CALLBACK(realize),this);
 	gtk_gl_area_set_has_depth_buffer(gl_area,TRUE);
 	gtk_gl_area_set_has_stencil_buffer(gl_area,TRUE);
-	gtk_gl_area_set_has_alpha(gl_area,TRUE);
 	g_object_ref_sink(gl_area);
 	cnt.add(gl_area);
 	
@@ -137,4 +139,8 @@ GLArea& GLArea::callback(const Vtable& vt,void* cb_obj,int id)
 	return *this;
 	}
 
-
+GLArea& GLArea::redraw() noexcept
+	{
+	m_impl->redraw();
+	return *this;
+	}

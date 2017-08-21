@@ -10,6 +10,7 @@
 #include "uixx/box.hpp"
 #include "uixx/label.hpp"
 #include "uixx/button.hpp"
+#include "uixx/filenameselect.hpp"
 
 using namespace Giesela;
 
@@ -26,6 +27,27 @@ struct SourcePanel
 		UIxx::SourceView m_src;
 		UIxx::Button m_compile;
 	};
+	
+struct PreviewPanel
+	{
+	PreviewPanel(UIxx::Container& cnt):m_box(cnt,true)
+		,m_model(m_box,"Model")
+		,m_view(m_box.insertMode({0,UIxx::Box::FILL|UIxx::Box::EXPAND}))
+		{}
+		
+	UIxx::Box m_box;
+		UIxx::Button m_model;
+		UIxx::GLArea m_view;
+	};
+	
+struct FileDeleter
+	{
+	void operator()(FILE* fptr) noexcept
+		{
+		if(fptr!=NULL)
+			{fclose(fptr);}
+		}
+	};
 
 class Application
 	{
@@ -37,20 +59,24 @@ class Application
 				,[](UIxx::Container& cnt)
 					{return SourcePanel(cnt);}
 				,[](UIxx::Container& cnt)
-					{return UIxx::GLArea(cnt);})
+					{return PreviewPanel(cnt);})
 			{
-			m_tp.b().minSize(320,220).versionRequest(4,5).callback(*this,0);
+			m_tp.b().m_view.minSize(320,220).versionRequest(4,5).callback(*this,0);
+			m_tp.b().m_model.callback(*this,1);
 			m_tp.a().m_src.content("Source goes here").lineNumbers(true)
 				.highlight(".glslf").minSize(500,400);
 			m_tp.a().m_label.alignment(0.0f);
 			m_tp.main().content("Log goes here");
 			
 			m_mainwin.callback(*this,0).show();
-			m_tp.a().m_src.focus();
+			m_tp.a().m_src.minSize(-1,-1).focus();
 			}
 		
 		UIxx::UiContext::RunStatus idle(UIxx::UiContext& context)
-			{return UIxx::UiContext::RunStatus::WAIT;}
+			{
+			m_tp.b().m_view.redraw();
+			return UIxx::UiContext::RunStatus::WAIT;
+			}
 		
 		typedef int MessageId;
 		typedef int MessageParam;
@@ -76,6 +102,26 @@ class Application
 			area.glActivate();
 			m_renderer.reset(new Renderer());
 			}
+			
+		void clicked(UIxx::Button& btn,int id)
+			{
+			switch(id)
+				{
+				case 1:
+					if(m_renderer)
+						{
+						std::string filename;
+						if(UIxx::filenameSelect(m_mainwin,".",filename,UIxx::FilenameSelectMode::OPEN))
+							{
+							std::unique_ptr<FILE,FileDeleter> src(fopen(filename.c_str(),"rb"));
+							m_tp.b().m_view.glActivate();
+							m_renderer->mesh(Mesh::fromWavefrontObj(src.get(),filename.c_str()));
+							}
+						}
+					break;
+				}
+			btn.state(false);
+			}
 		
 	private:
 		UIxx::UiContext& r_ctx;
@@ -83,7 +129,7 @@ class Application
 			UIxx::TPaned<UIxx::TPanedLayout::SmallSmallLarge
 				,UIxx::SourceView
 				,SourcePanel
-				,UIxx::GLArea> m_tp;
+				,PreviewPanel> m_tp;
 				
 		std::unique_ptr<Renderer> m_renderer;
 	};
