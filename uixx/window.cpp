@@ -157,12 +157,13 @@ Window& Window::icon(const ImageRepository& repo,ImageRepository::IdType id
 Window::Impl::Impl(const char* ti,Container* owner):Window(*this),m_id(0)
 	,r_cb_obj(nullptr),r_focus_old(nullptr)
 	{
-/*	while (g_main_context_pending(NULL))
-		{g_main_context_iteration(NULL,FALSE);}*/
 	auto widget=gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	g_signal_connect(widget,"delete-event",G_CALLBACK(delete_callback),this);
 	g_signal_connect(widget,"key-press-event",G_CALLBACK(key_down),this);
 	g_signal_connect(widget,"key-release-event",G_CALLBACK(key_up),this);
+//	FIXME: This does not always work! We want to catch mouse events *only* when
+//	user clicks on this window. Not when user clicks inside a widget. Maybe this
+//	feature does not exists in GTK?
 //	g_signal_connect(widget,"button-press-event",G_CALLBACK(mouse_down),this);
 	g_signal_connect(widget,"focus-in-event",G_CALLBACK(focus_in_callback),this);
 	m_focus={this,focus_out};

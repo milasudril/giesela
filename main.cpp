@@ -8,8 +8,26 @@
 #include "uixx/sourceview.hpp"
 #include "uixx/glarea.hpp"
 #include "uixx/box.hpp"
+#include "uixx/label.hpp"
+#include "uixx/button.hpp"
 
 using namespace Giesela;
+
+struct SourcePanel
+	{
+	SourcePanel(UIxx::Container& cnt):m_box(cnt,true)
+		,m_label(m_box,"Fragment shader")
+		,m_src(m_box.insertMode({0,UIxx::Box::FILL|UIxx::Box::EXPAND}))
+		,m_compile(m_box.insertMode({0,0}),"Compile")
+		{
+		m_label.alignment(0.0f);
+		}
+		
+	UIxx::Box m_box;
+		UIxx::Label m_label;
+		UIxx::SourceView m_src;
+		UIxx::Button m_compile;
+	};
 
 class Application
 	{
@@ -19,13 +37,14 @@ class Application
 				,[](UIxx::Container& cnt)
 					{return UIxx::SourceView(cnt);}
 				,[](UIxx::Container& cnt)
-					{return UIxx::SourceView(cnt);}
+					{return SourcePanel(cnt);}
 				,[](UIxx::Container& cnt)
 					{return UIxx::GLArea(cnt);})
 			{
 			m_mainwin.callback(*this,0).show();
 			m_tp.main().content("Log goes here");
-			m_tp.a().content("Source goes here").lineNumbers(true).focus();
+			m_tp.a().m_src.content("Source goes here").lineNumbers(true)
+				.highlight(".glslf").focus();
 			}
 		
 		UIxx::UiContext::RunStatus idle(UIxx::UiContext& context)
@@ -48,7 +67,7 @@ class Application
 		UIxx::Window m_mainwin;
 			UIxx::TPaned<UIxx::TPanedLayout::SmallSmallLarge
 				,UIxx::SourceView
-				,UIxx::SourceView
+				,SourcePanel
 				,UIxx::GLArea> m_tp;
 	};
 	
