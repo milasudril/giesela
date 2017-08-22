@@ -103,7 +103,7 @@ class Application
 		
 		void log(const char* message)
 			{
-			m_tp.main().append(message).append("\n");
+			m_tp.main().append(message).append("\n").scrollToEnd();
 			fprintf(stderr,"%s\n",message);
 			}
 			

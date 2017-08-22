@@ -34,6 +34,16 @@ class SourceView::Impl:private SourceView
 			gtk_text_buffer_get_end_iter(buffer,&i);
 			gtk_text_buffer_insert(buffer,&i,text,-1);
 			}
+			
+		void scrollToEnd()
+			{
+			auto buffer=gtk_text_view_get_buffer(GTK_TEXT_VIEW(m_handle));
+			auto mark=gtk_text_buffer_get_insert(buffer);
+			GtkTextIter i;
+			gtk_text_buffer_get_end_iter(buffer,&i);
+			gtk_text_buffer_move_mark(buffer,mark,&i);
+			gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(m_handle),mark,0,FALSE,0.0,0.0);
+			}
 
 		void readonly(bool status)
 			{
@@ -142,6 +152,12 @@ SourceView& SourceView::minSize(int width,int height)
 SourceView& SourceView::append(const char* text)
 	{
 	m_impl->append(text);
+	return *this;
+	}
+
+SourceView& SourceView::scrollToEnd()
+	{
+	m_impl->scrollToEnd();
 	return *this;
 	}
 	

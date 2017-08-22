@@ -58,6 +58,8 @@ namespace UIxx
 			SourceView& minSize(int width,int height);
 			
 			SourceView& append(const char* text);
+			
+			SourceView& scrollToEnd();
 
 		protected:
 			class Impl;
