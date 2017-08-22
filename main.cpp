@@ -20,13 +20,17 @@ struct SourcePanel
 	SourcePanel(UIxx::Container& cnt):m_box(cnt,true)
 		,m_label(m_box,"Fragment shader:")
 		,m_src(m_box.insertMode({0,UIxx::Box::FILL|UIxx::Box::EXPAND}))
-		,m_compile(m_box.insertMode({0,0}),"Compile")
+			,m_buttons(m_box.insertMode({2,0}),false)
+				,m_reset(m_buttons.insertMode({2,UIxx::Box::FILL|UIxx::Box::EXPAND}),"Reset")
+				,m_compile(m_buttons,"Compile")
 		{}
 		
 	UIxx::Box m_box;
 		UIxx::Label m_label;
 		UIxx::SourceView m_src;
-		UIxx::Button m_compile;
+		UIxx::Box m_buttons;
+			UIxx::Button m_reset;
+			UIxx::Button m_compile;
 	};
 	
 struct PreviewPanel
@@ -63,14 +67,15 @@ class Application
 					{return PreviewPanel(cnt);})
 			{
 			m_tp.b().m_view.minSize(320,220).versionRequest(4,5).callback(*this,0);
-			m_tp.b().m_model.callback(*this,1);
+			m_tp.b().m_model.callback(*this,2);
 			m_tp.a().m_src.content(Renderer::defaultShader()).lineNumbers(true)
 				.highlight(".glslf").minSize(500,400);
 			m_tp.a().m_label.alignment(0.0f);
 			
 			m_mainwin.callback(*this,0).show();
 			m_tp.a().m_src.minSize(-1,-1).focus();
-			m_tp.a().m_compile.callback(*this,0);
+			m_tp.a().m_reset.callback(*this,0);
+			m_tp.a().m_compile.callback(*this,1);
 			}
 		
 		UIxx::UiContext::RunStatus idle(UIxx::UiContext& context)
@@ -121,6 +126,7 @@ class Application
 				switch(id)
 					{
 					case 0:
+						m_tp.a().m_src.content(Renderer::defaultShader());
 						if(m_renderer)
 							{
 							m_tp.b().m_view.glActivate();
@@ -129,6 +135,14 @@ class Application
 						break;
 						
 					case 1:
+						if(m_renderer)
+							{
+							m_tp.b().m_view.glActivate();
+							m_renderer->shader(m_tp.a().m_src.content());
+							}
+						break;
+
+					case 2:
 						if(m_renderer)
 							{
 							std::string filename;

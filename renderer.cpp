@@ -117,7 +117,7 @@ void main()
 		 ,Shader{shader_string,ShaderType::FRAGMENT_SHADER}
 		));
 	m_program->bind();
-	glUniform3f(2,0.5f,0.0f,1.0f);
+	glUniform3f(2,0.25f,0.0f,1.0f);
 	glUniform3f(3,-2.0f,-2.0f,3.0f);
 	glUniform1f(4,10.0f);
 	}

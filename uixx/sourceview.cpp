@@ -25,6 +25,11 @@ class SourceView::Impl:private SourceView
 			{
 			auto buffer=gtk_text_view_get_buffer(GTK_TEXT_VIEW(m_handle));
 			gtk_text_buffer_set_text(buffer,text,-1);
+			if(m_content!=nullptr)
+				{
+				g_free(m_content);
+				m_content=nullptr;
+				}
 			}
 			
 		void append(const char* text)
@@ -33,6 +38,11 @@ class SourceView::Impl:private SourceView
 			GtkTextIter i;
 			gtk_text_buffer_get_end_iter(buffer,&i);
 			gtk_text_buffer_insert(buffer,&i,text,-1);
+			if(m_content!=nullptr)
+				{
+				g_free(m_content);
+				m_content=nullptr;
+				}
 			}
 			
 		void scrollToEnd()
@@ -243,17 +253,18 @@ void SourceView::Impl::highlight(const char* filename_pattern)
 
 gboolean SourceView::Impl::focus_callback(GtkWidget* widget,GdkEvent* event,gpointer data)
 	{
+	auto self=reinterpret_cast<Impl*>(data);
+	if(self->m_content!=nullptr)
+		{
+		g_free(self->m_content);
+		self->m_content=nullptr;
+		}
 	//We must defer the event signal until next pass, otherwise GTK widgets break
 	g_idle_add([](void* impl)
 		{
 		auto self=reinterpret_cast<Impl*>(impl);
 		if(self->r_cb!=nullptr)
 			{
-			if(self->m_content!=nullptr)
-				{
-				g_free(self->m_content);
-				self->m_content=nullptr;
-				}
 			self->r_cb(self->r_cb_obj,*self);
 			}
 		return G_SOURCE_REMOVE;
