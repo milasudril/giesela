@@ -2,6 +2,7 @@
 
 #include "renderer.hpp"
 #include "mesh.hpp"
+#include "error.hpp"
 #include "uixx/uicontext.hpp"
 #include "uixx/window.hpp"
 #include "uixx/tpaned.hpp"
@@ -97,8 +98,13 @@ class Application
 			
 		void realize(UIxx::GLArea& area,int id)
 			{
-			area.glActivate();
-			m_renderer.reset(new Renderer(*this));
+			try
+				{
+				area.glActivate();
+				m_renderer.reset(new Renderer(*this));
+				}
+			catch(const Error& err)
+				{log(err.message());}
 			}
 		
 		void log(const char* message)
@@ -109,21 +115,26 @@ class Application
 			
 		void clicked(UIxx::Button& btn,int id)
 			{
-			switch(id)
+			try
 				{
-				case 1:
-					if(m_renderer)
-						{
-						std::string filename;
-						if(UIxx::filenameSelect(m_mainwin,".",filename,UIxx::FilenameSelectMode::OPEN))
+				switch(id)
+					{
+					case 1:
+						if(m_renderer)
 							{
-							std::unique_ptr<FILE,FileDeleter> src(fopen(filename.c_str(),"rb"));
-							m_tp.b().m_view.glActivate();
-							m_renderer->mesh(Mesh::fromWavefrontObj(src.get(),filename.c_str()));
+							std::string filename;
+							if(UIxx::filenameSelect(m_mainwin,".",filename,UIxx::FilenameSelectMode::OPEN))
+								{
+								std::unique_ptr<FILE,FileDeleter> src(fopen(filename.c_str(),"rb"));
+								m_tp.b().m_view.glActivate();
+								m_renderer->mesh(Mesh::fromWavefrontObj(src.get(),filename.c_str()));
+								}
 							}
-						}
-					break;
+						break;
+					}
 				}
+			catch(const Error& err)
+				{log(err.message());}
 			btn.state(false);
 			}
 		
