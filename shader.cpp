@@ -1,6 +1,7 @@
 //@	{"targets":[{"name":"shader.o","type":"object","pkgconfig_libs":["glew"]}]}
 
 #include "shader.hpp"
+#include "error.hpp"
 #include <algorithm>
 #include <cstring>
 
@@ -25,8 +26,6 @@ Shader::Shader(const char* source,ShaderType type)
 		glGetShaderInfoLog(m_handle,std::min(1024,length),NULL,message);
 		glDeleteShader(m_handle);
 	
-		fprintf(stderr,"%s ",message);
-		throw "Failed to compile shader";
-//		exceptionRaise(Error("It was not possible to compile the ",name(type),". ",message));
+		throw Error("Failed to compile shader: ",static_cast<const char*>(message));
 		}
 	}

@@ -31,6 +31,8 @@ namespace Giesela
 			
 			static const char* defaultShader() noexcept;
 			
+			void shader(const char* shader_string);
+			
 		private:
 			uint16_t m_theta;
 			std::unique_ptr<Program> m_program;

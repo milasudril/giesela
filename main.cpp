@@ -70,6 +70,7 @@ class Application
 			
 			m_mainwin.callback(*this,0).show();
 			m_tp.a().m_src.minSize(-1,-1).focus();
+			m_tp.a().m_compile.callback(*this,0);
 			}
 		
 		UIxx::UiContext::RunStatus idle(UIxx::UiContext& context)
@@ -119,6 +120,14 @@ class Application
 				{
 				switch(id)
 					{
+					case 0:
+						if(m_renderer)
+							{
+							m_tp.b().m_view.glActivate();
+							m_renderer->shader(m_tp.a().m_src.content());
+							}
+						break;
+						
 					case 1:
 						if(m_renderer)
 							{

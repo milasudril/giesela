@@ -4,6 +4,7 @@
 #define GIESELA_PROGRAM_HPP
 
 #include "shader.hpp"
+#include "error.hpp"
 
 namespace Giesela
 	{
@@ -26,7 +27,10 @@ namespace Giesela
 				}
 
 			~Program() noexcept
-				{glDeleteProgram(m_handle);}
+				{
+				unbind();
+				glDeleteProgram(m_handle);
+				}
 
 			void bind() const noexcept
 				{glUseProgram(m_handle);}
@@ -69,8 +73,7 @@ namespace Giesela
 			glDeleteProgram(m_handle);
 		
 			fprintf(stderr,"%s ",message);
-			throw "Program link error";
-		//	exceptionRaise(Error("It was not possible to link the shader program. ",message));
+			throw Error("Program link error: ",static_cast<const char*>(message));
 			}
 		}
 	}

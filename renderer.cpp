@@ -87,6 +87,20 @@ Renderer::Renderer(void (*log_callback)(void* cb_obj,const char* message),void* 
 	glDepthFunc(GL_LESS);
 	glClearColor(0,0,0,1);
 	glBindVertexArray(m_vao);
+	shader(s_default_shader);
+	m_theta=0;
+	m_cam_pos=glm::vec3{0.0f,-3.0f,2.0f};
+	
+	m_View=glm::lookAt(m_cam_pos,glm::vec3{0.0f,0.0f,0.0f},glm::vec3{0.0f,0.0f,1.0f});
+	m_Projection=glm::perspective(0.5f*pi,1.0f,0.1f,100.0f);
+	glUniform3f(2,0.5f,0.0f,1.0f);
+	
+	glUniform3f(3,-2.0f,-2.0f,3.0f);
+	glUniform1f(4,10.0f);
+	}
+
+void Renderer::shader(const char* shader_string)
+	{
 	m_program.reset(new Program(
 		  Shader{R"EOF(#version 450 core
 layout(location=0) in vec3 vertex_pos;
@@ -105,18 +119,9 @@ void main()
 	fragment_pos=vec3( Model*vec4(vertex_pos,1.0) );
 	}
 )EOF",ShaderType::VERTEX_SHADER}
-		 ,Shader{s_default_shader,ShaderType::FRAGMENT_SHADER}
+		 ,Shader{shader_string,ShaderType::FRAGMENT_SHADER}
 		));
 	m_program->bind();
-	m_theta=0;
-	m_cam_pos=glm::vec3{0.0f,-3.0f,2.0f};
-	
-	m_View=glm::lookAt(m_cam_pos,glm::vec3{0.0f,0.0f,0.0f},glm::vec3{0.0f,0.0f,1.0f});
-	m_Projection=glm::perspective(0.5f*pi,1.0f,0.1f,100.0f);
-	glUniform3f(2,0.5f,0.0f,1.0f);
-	
-	glUniform3f(3,-2.0f,-2.0f,3.0f);
-	glUniform1f(4,10.0f);
 	}
 
 Renderer::~Renderer()
