@@ -31,6 +31,9 @@ namespace UIxx
 				
 			auto& b() noexcept	
 				{return m_layout.m_b;}
+				
+			auto& ab() noexcept
+				{return m_layout.m_subpaned;}
 			
 		private:
 			template<TPanedLayout layout,bool dummy=0>

@@ -39,6 +39,8 @@ namespace UIxx
 			void* toplevel() const;
 			Paned& insertMode(const InsertMode& mode) noexcept;
 			Rectangle boundingBox(int index) const noexcept;
+			Paned& position(int x) noexcept;
+			int position() const noexcept;
 
 		protected:
 			class Impl;

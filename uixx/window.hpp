@@ -50,6 +50,8 @@ namespace UIxx
 
 			Window& icon(const ImageRepository& repo,ImageRepository::IdType id
 				,const std::pair<const uint8_t*,const uint8_t*>& data);
+			
+			Window& defaultSize(int width,int height);
 
 		protected:
 			struct Vtable

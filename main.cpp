@@ -66,19 +66,21 @@ class Application
 				,[](UIxx::Container& cnt)
 					{return PreviewPanel(cnt);})
 			{
-			m_tp.b().m_view.minSize(320,200).versionRequest(4,5).callback(*this,0);
+			m_tp.b().m_view
+			//	.minSize(640,400)
+				.versionRequest(4,5).callback(*this,0);
 			m_tp.b().m_model.callback(*this,2);
 			m_tp.a().m_src.content(Renderer::defaultShader()).lineNumbers(true)
-				.highlight(".glslf").minSize(500,400);
+			//	.minSize(500,400)
+				.highlight(".glslf");
 			m_tp.a().m_label.alignment(0.0f);
 			
-			m_mainwin.callback(*this,0).show();
-			m_tp.b().m_view.minSize(-1,-1);
-			m_tp.a().m_src.minSize(-1,-1).focus();
+			m_mainwin.defaultSize(480+640,700).callback(*this,0).show();
+			m_tp.ab().position(480);
+			
+			m_tp.a().m_src.focus();
 			m_tp.a().m_reset.callback(*this,0);
 			m_tp.a().m_compile.callback(*this,1);
-			
-
 			}
 		
 		UIxx::UiContext::RunStatus idle(UIxx::UiContext& context)

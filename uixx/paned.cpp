@@ -79,6 +79,13 @@ class Paned::Impl final:private Paned
 
 			return Rectangle{min,min + size};
 			}
+		
+		void position(int x) noexcept
+			{gtk_paned_set_position(m_handle,x);}
+		
+		int position() const noexcept
+			{return gtk_paned_get_position(m_handle);}
+
 
 	private:
 		GtkPaned* m_handle;
@@ -128,6 +135,18 @@ Paned& Paned::insertMode(const InsertMode& mode) noexcept
 
 Rectangle Paned::boundingBox(int index) const noexcept
 	{return m_impl->boundingBox(index);}
+	
+Paned& Paned::position(int x) noexcept
+	{
+	m_impl->position(x);
+	return *this;
+	}
+
+int Paned::position() const noexcept
+	{
+	return m_impl->position();
+	}
+
 
 
 

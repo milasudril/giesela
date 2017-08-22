@@ -68,6 +68,9 @@ class Window::Impl final:private Window
 
 		void icon(const ImageRepository& repo,ImageRepository::IdType id
 			,const std::pair<const uint8_t*,const uint8_t*>& data);
+		
+		void defaultSize(int width,int height)
+			{gtk_window_set_default_size(m_handle,width,height);}
 
 	private:
 		static gboolean delete_callback(GtkWidget* widget,GdkEvent* event,void* user_data);
@@ -151,6 +154,13 @@ Window& Window::icon(const ImageRepository& repo,ImageRepository::IdType id
 	m_impl->icon(repo,id,data);
 	return *this;
 	}
+	
+Window& Window::defaultSize(int width,int height)
+	{
+	m_impl->defaultSize(width,height);
+	return *this;
+	}
+
 
 
 
