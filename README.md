@@ -1,7 +1,7 @@
 GieShadErLA -- Gl ShadEr LAboratory
 ===================================
 
-This is a test application for OpenGL fragment shaders. You can manipulate the fragment shader in the left panel, and click on compile to see the result. You can load models from Wavefront files. Currently, the model must have an extent close to unity in all directions. Also Z is up.
+This is a test application for OpenGL fragment shaders. You can manipulate the fragment shader in the left panel, and click on compile to see the result. You can load models from Wavefront files. Currently, the model must have an extent close to unity in all directions. Also, Z is up.
 
 Dependencies
 ------------
