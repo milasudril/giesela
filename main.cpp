@@ -66,7 +66,6 @@ class Application
 			m_tp.a().m_src.content("Source goes here").lineNumbers(true)
 				.highlight(".glslf").minSize(500,400);
 			m_tp.a().m_label.alignment(0.0f);
-			m_tp.main().content("Log goes here");
 			
 			m_mainwin.callback(*this,0).show();
 			m_tp.a().m_src.minSize(-1,-1).focus();
@@ -98,9 +97,14 @@ class Application
 			
 		void realize(UIxx::GLArea& area,int id)
 			{
-			fprintf(stderr,"Hello\n");
 			area.glActivate();
-			m_renderer.reset(new Renderer());
+			m_renderer.reset(new Renderer(*this));
+			}
+		
+		void log(const char* message)
+			{
+			m_tp.main().append(message).append("\n");
+			fprintf(stderr,"%s\n",message);
 			}
 			
 		void clicked(UIxx::Button& btn,int id)

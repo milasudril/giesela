@@ -3,6 +3,7 @@
 #include "renderer.hpp"
 #include "program.hpp"
 #include "mesh.hpp"
+#include "error.hpp"
 #include <GL/glew.h>
 #include <cstdio>
 #include <cmath>
@@ -13,19 +14,34 @@ using namespace Giesela;
 
 static constexpr auto pi=std::acos(-1.0f);
 
-Renderer::Renderer()
+Renderer::Renderer(void (*log_callback)(void* cb_obj,const char* message),void* cb_obj)
 	{
 	if(!initiated)
 		{
 		glewExperimental=GL_TRUE;
 		auto status=glewInit();
 		if(status!=GLEW_OK)
-			{throw "GLEW initailzation failed";}
-		auto renderer = glGetString(GL_RENDERER);
-		auto version = glGetString(GL_VERSION);
-		fprintf(stderr,"Renderer: %s\n", renderer);
-		fprintf(stderr,"OpenGL version supported %s\n", version);
+			{throw Error("GLEW: ",reinterpret_cast<const char*>( glewGetErrorString(status) ) );}
 		initiated=true;
+		
+		std::string buffer("(i) Using GLEW version ");
+		buffer+=reinterpret_cast<const char*>(glewGetString(GLEW_VERSION));
+		log_callback(cb_obj,buffer.c_str());
+	
+		buffer.clear();
+		buffer+="\nOpenGL information: \n"
+			"  Vendor:   ";
+		buffer+=reinterpret_cast<const char*>( glGetString(GL_VENDOR) );
+		buffer+="\n  Renderer: ";
+			buffer+=reinterpret_cast<const char*>( glGetString(GL_RENDERER) );
+		buffer+="\n  Version:  ";
+			buffer+=reinterpret_cast<const char*>( glGetString(GL_VERSION) );
+		buffer+="\n  Shader:   ";
+			buffer+=reinterpret_cast<const char*>( glGetString(GL_SHADING_LANGUAGE_VERSION) );
+		buffer+="\n";
+		
+		log_callback(cb_obj,buffer.c_str());
+		
 		}
 		
 	glCreateVertexArrays(1,&m_vao);

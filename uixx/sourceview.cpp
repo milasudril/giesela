@@ -26,6 +26,14 @@ class SourceView::Impl:private SourceView
 			auto buffer=gtk_text_view_get_buffer(GTK_TEXT_VIEW(m_handle));
 			gtk_text_buffer_set_text(buffer,text,-1);
 			}
+			
+		void append(const char* text)
+			{
+			auto buffer=gtk_text_view_get_buffer(GTK_TEXT_VIEW(m_handle));
+			GtkTextIter i;
+			gtk_text_buffer_get_end_iter(buffer,&i);
+			gtk_text_buffer_insert(buffer,&i,text,-1);
+			}
 
 		void readonly(bool status)
 			{
@@ -130,6 +138,13 @@ SourceView& SourceView::minSize(int width,int height)
 	m_impl->minSize(width,height);
 	return *this;
 	}
+
+SourceView& SourceView::append(const char* text)
+	{
+	m_impl->append(text);
+	return *this;
+	}
+	
 
 static GtkCssProvider* s_style=nullptr;
 static size_t s_style_refcount=0;

@@ -56,6 +56,8 @@ namespace UIxx
 			SourceView& focus();
 
 			SourceView& minSize(int width,int height);
+			
+			SourceView& append(const char* text);
 
 		protected:
 			class Impl;

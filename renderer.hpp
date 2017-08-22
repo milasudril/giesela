@@ -16,7 +16,13 @@ namespace Giesela
 	class Renderer
 		{
 		public:
-			Renderer();
+			template<class Logger>
+			Renderer(Logger& log):
+				Renderer([](void* cb_obj,const char* message)
+					{reinterpret_cast<Logger*>(cb_obj)->log(message);},&log)
+				{}
+			
+			Renderer(void (*log_callback)(void* cb_obj,const char* message),void* cb_obj);
 			~Renderer();
 			
 			void render() noexcept;
