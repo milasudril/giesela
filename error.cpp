@@ -3,6 +3,7 @@
 //@	}
 
 #include "error.hpp"
+#include <cstdio>
 
 template<>
 char* append<const char*>(const char* src,char* ptr,char* ptr_max)
@@ -14,4 +15,13 @@ char* append<const char*>(const char* src,char* ptr,char* ptr_max)
 		++ptr;
 		}
 	return ptr;
+	}
+
+
+template<>
+char* append<int>(int src,char* ptr,char* ptr_max)
+	{
+	char buffer[16];
+	sprintf(buffer,"%d",src);
+	return append<const char*>(buffer,ptr,ptr_max);
 	}

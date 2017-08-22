@@ -39,29 +39,29 @@ namespace
 		};
 	}
 
-static int to_int_checked(const char* x)
+static int to_int_checked(const char* x,const char* stream_src)
 	{
 	auto val=atoll(x);
 	if( val>0x7fffffff || val<static_cast<int>(0x80000000) )
-		{throw "Value out of range";}
+		{throw Error(stream_src,": Value ",x," out of range");}
 	return val;
 	}
 	
-void value_set(const std::string& buffer,WavefrontObj_Vertex& v,int field_count)
+void value_set(const std::string& buffer,WavefrontObj_Vertex& v,int field_count,const char* stream_src)
 	{
 	switch(field_count)
 		{
 		case 0:
-			v.vertex=to_int_checked(buffer.c_str());
+			v.vertex=to_int_checked(buffer.c_str(),stream_src);
 			break;
 		case 1:
-			v.uv=to_int_checked(buffer.c_str());
+			v.uv=to_int_checked(buffer.c_str(),stream_src);
 			break;
 		case 2:
-			v.normal=to_int_checked(buffer.c_str());
+			v.normal=to_int_checked(buffer.c_str(),stream_src);
 			break;
 		default:
-			throw "Too many vertex fields";
+			throw Error(stream_src,": Too many vertex fields");
 		}
 	}
 	
@@ -77,41 +77,41 @@ static std::pair<WavefrontObj_Face,bool> face_read(int ch_in,FILE* src,const cha
 		if(ch_in==EOF)
 			{
 			if(vert_count>=3)
-				{throw "Only tris are supported";}
+				{throw Error(stream_src,": Only tris are supported");}
 			ret.verts[vert_count]=v;	
 			++vert_count;
 			if(vert_count!=3)
-				{throw "Too few vertices in face";}
+				{throw Error(stream_src,": Too few vertices in face");}
 			return {ret,false};
 			}
 
 		if(ch_in=='/')
 			{
-			value_set(buffer,v,field_count);
+			value_set(buffer,v,field_count,stream_src);
 			++field_count;
 			buffer.clear();
 			}
 		else
 		if(ch_in>=0 && ch_in<=' ') 
 			{
-			value_set(buffer,v,field_count);
+			value_set(buffer,v,field_count,stream_src);
 			buffer.clear();
 			switch(ch_in)
 				{
 				case '\n':
 					if(vert_count>=3)
-						{throw "Only tris are supported";}
+						{throw Error(stream_src,": Only tris are supported");}
 					ret.verts[vert_count]=v;	
 					++vert_count;
 					if(vert_count!=3)
-						{throw "Too few vertices in face";}
+						{throw Error(stream_src,"Too few vertices in face");}
 					return {ret,true};
 					
 				default:
 					if(v.vertex!=0)
 						{
 						if(vert_count>=3)
-							{throw "Only tris are supported";}
+							{throw Error(stream_src,"Only tris are supported");}
 						ret.verts[vert_count]=v;	
 						++vert_count;
 						field_count=0;
@@ -136,7 +136,7 @@ static std::pair<glm::vec3,bool> vector_read(int ch_in,FILE* src,const char* str
 			if(buffer.length()!=0)
 				{
 				if(field_count>=3)
-					{throw "Too many vector components";}
+					{throw Error(stream_src,": Too many vector components");}
 				ret[field_count]=convert(buffer.c_str());
 				++field_count;
 				buffer.clear();
@@ -149,8 +149,8 @@ static std::pair<glm::vec3,bool> vector_read(int ch_in,FILE* src,const char* str
 			if(buffer.length()!=0)
 				{
 				if(field_count>=3)
-					{throw "Too many vector components";}
-				ret[field_count]=atof(buffer.c_str());
+					{throw Error(stream_src,": Too many vector components");}
+				ret[field_count]=convert(buffer.c_str());
 				++field_count;
 				buffer.clear();
 				}
@@ -177,8 +177,8 @@ static std::pair<glm::vec2,bool> vector2_read(int ch_in,FILE* src,const char* st
 			if(buffer.length()!=0)
 				{
 				if(field_count>=2)
-					{throw "Too many vector components";}
-				ret[field_count]=atof(buffer.c_str());
+					{throw Error(stream_src,": Too many vector components");}
+				ret[field_count]=convert(buffer.c_str());
 				++field_count;
 				buffer.clear();
 				}
@@ -190,8 +190,8 @@ static std::pair<glm::vec2,bool> vector2_read(int ch_in,FILE* src,const char* st
 			if(buffer.length()!=0)
 				{
 				if(field_count>=2)
-					{throw "Too many vector components";}
-				ret[field_count]=atof(buffer.c_str());
+					{throw Error(stream_src,": Too many vector components");}
+				ret[field_count]=convert(buffer.c_str());
 				++field_count;
 				buffer.clear();
 				}
@@ -213,18 +213,18 @@ static void validate(const WavefrontObj_Face& face
 	for(int k=0;k<3;++k)
 		{
 		if(face.verts[k].vertex<=0 || face.verts[k].vertex > n_verts)
-			{throw "Invalid vertex index";}
+			{throw Error(stream_src,": Invalid vertex index ",face.verts[k].vertex);}
 		if(face.verts[k].uv<=0 || face.verts[k].uv > n_uvs)
-			{throw "Invalid uv index";}
+			{throw Error(stream_src,": Invalid uv index ",face.verts[k].uv);}
 		if(face.verts[k].normal<=0 || face.verts[k].normal > n_normals)
-			{throw "Invalid normal index";}
+			{throw Error(stream_src,": Invalid normal index",face.verts[k].normal);}
 		}
 	}
 	
-static uint16_t to_uint16_checked(size_t x,const char* context)
+static uint16_t to_uint16_checked(size_t x,const char* stream_src)
 	{
 	if(x>0xffff)
-		{throw "Value out of range";}
+		{throw Error(stream_src,": Value out of range");}
 	return static_cast<uint16_t>(x);
 	}
 	
@@ -263,9 +263,17 @@ Mesh Mesh::fromWavefrontObj(FILE* src,const char* stream_src)
 							{return false;}
 						}
 						return true;
+					
+					case 'm':
+					case '#':
+					case 'o':
+					case 's':
+						state_current=State::COMMENT;
+						return true;
+						
 					default:
 						if(!(ch_in>=0 && ch_in<=' '))
-							{state_current=State::COMMENT;}
+							{throw Error(stream_src,": Illigal character `",ch_in,"`");}
 						return true;
 					}
 				break;
