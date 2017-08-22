@@ -29,6 +29,8 @@ namespace Giesela
 			void viewport(int width,int height) noexcept;
 			void mesh(const Mesh& m);
 			
+			static const char* defaultShader() noexcept;
+			
 		private:
 			uint16_t m_theta;
 			std::unique_ptr<Program> m_program;

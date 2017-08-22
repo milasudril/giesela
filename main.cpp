@@ -64,7 +64,7 @@ class Application
 			{
 			m_tp.b().m_view.minSize(320,220).versionRequest(4,5).callback(*this,0);
 			m_tp.b().m_model.callback(*this,1);
-			m_tp.a().m_src.content("Source goes here").lineNumbers(true)
+			m_tp.a().m_src.content(Renderer::defaultShader()).lineNumbers(true)
 				.highlight(".glslf").minSize(500,400);
 			m_tp.a().m_label.alignment(0.0f);
 			

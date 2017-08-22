@@ -14,6 +14,42 @@ using namespace Giesela;
 
 static constexpr auto pi=std::acos(-1.0f);
 
+static constexpr const char* s_default_shader=R"EOF(#version 450 core
+
+in vec3 fragment_normal;
+in vec3 fragment_pos;
+out vec3 color;
+
+float sRGB(float x)
+	{
+	if (x <= 0.00031308)
+		{return 12.92 * x;}
+	else
+		{return 1.055*pow(x,(1.0 / 2.4) ) - 0.055;}
+	}
+
+vec3 to_srgb(vec3 color)
+	{
+	return vec3(sRGB(color.r),sRGB(color.g),sRGB(color.b));
+	}
+
+layout(location=2) uniform vec3 color_in;
+layout(location=3) uniform vec3 light_position;
+layout(location=4) uniform float light_intensity;
+
+void main()
+	{
+	vec3 lf=light_position - fragment_pos;
+	float d2=dot(lf,lf);
+	float d=sqrt(d2);
+	float proj=clamp(dot( fragment_normal,lf/d ),0,1);
+	color=to_srgb(light_intensity * color_in*proj/d2 );
+	}
+)EOF";
+
+const char* Renderer::defaultShader() noexcept
+	{return s_default_shader;}
+
 Renderer::Renderer(void (*log_callback)(void* cb_obj,const char* message),void* cb_obj)
 	{
 	if(!initiated)
@@ -52,8 +88,7 @@ Renderer::Renderer(void (*log_callback)(void* cb_obj,const char* message),void* 
 	glClearColor(0,0,0,1);
 	glBindVertexArray(m_vao);
 	m_program.reset(new Program(
-		  Shader{R"EOF(
-#version 450 core
+		  Shader{R"EOF(#version 450 core
 layout(location=0) in vec3 vertex_pos;
 layout(location=1) in vec3 vertex_normal;
 
@@ -70,39 +105,7 @@ void main()
 	fragment_pos=vec3( Model*vec4(vertex_pos,1.0) );
 	}
 )EOF",ShaderType::VERTEX_SHADER}
-		 ,Shader{R"EOF(
-#version 450 core
-
-in vec3 fragment_normal;
-in vec3 fragment_pos;
-out vec3 color;
-
-float sRGB(float x)
-	{
-	if (x <= 0.00031308)
-		{return 12.92 * x;}
-	else
-		{return 1.055*pow(x,(1.0 / 2.4) ) - 0.055;}
-	}
-
-vec3 to_srgb(vec3 color)
-	{
-	return vec3(sRGB(color.r),sRGB(color.g),sRGB(color.b));
-	}
-
-layout(location=2) uniform vec3 color_in;
-layout(location=3) uniform vec3 light_position;
-layout(location=4) uniform float light_intensity;
-
-void main()
-	{
-	vec3 lf=light_position - fragment_pos;
-	float d2=dot(lf,lf);
-	float d=sqrt(d2);
-	float proj=clamp(dot( fragment_normal,lf/d ),0,1);
-	color=to_srgb(light_intensity * color_in*proj/d2 );
-	}
-)EOF",ShaderType::FRAGMENT_SHADER}
+		 ,Shader{s_default_shader,ShaderType::FRAGMENT_SHADER}
 		));
 	m_program->bind();
 	m_theta=0;
@@ -131,6 +134,8 @@ void Renderer::viewport(int width,int height) noexcept
 
 void Renderer::mesh(const Mesh& m)
 	{
+	if(m.faceCount()==0 || m.vertexCount()==0)
+		{throw Error("Mesh is empty");}
 	if(m_vertex_buffer!=0)
 		{
 		for(int k=0;k<3;++k)
