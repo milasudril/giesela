@@ -16,7 +16,7 @@ class Error
 	public:
 		template<class ... T>
 		explicit Error(T ... args) noexcept
-			{message_build(m_buffer.begin(),args...);}
+			{message_build(m_buffer.begin(),static_cast<const char*>( "(x) " ),args...);}
 
 		const char* message() const noexcept
 			{return m_buffer.begin();}
@@ -27,7 +27,7 @@ class Error
 		template<class Head,class ... T>
 		char* message_build(char* pos,const Head& obj,T ... args)
 			{
-			pos=append<Head>(obj,pos,m_buffer.end()-1);
+			pos=append<Head>(obj,pos,(m_buffer.data() + m_buffer.size()) -1);
 			return message_build(pos,args...);
 			}
 
