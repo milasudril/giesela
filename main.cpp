@@ -67,11 +67,9 @@ class Application
 					{return PreviewPanel(cnt);})
 			{
 			m_tp.b().m_view
-			//	.minSize(640,400)
 				.versionRequest(4,5).callback(*this,0);
 			m_tp.b().m_model.callback(*this,2);
 			m_tp.a().m_src.content(Renderer::defaultShader()).lineNumbers(true)
-			//	.minSize(500,400)
 				.highlight(".glslf");
 			m_tp.a().m_label.alignment(0.0f);
 			
@@ -136,6 +134,7 @@ class Application
 							{
 							m_tp.b().m_view.glActivate();
 							m_renderer->shader(m_tp.a().m_src.content());
+							log("(i) Shader activated");
 							}
 						break;
 						
@@ -144,6 +143,7 @@ class Application
 							{
 							m_tp.b().m_view.glActivate();
 							m_renderer->shader(m_tp.a().m_src.content());
+							log("(i) Shader activated");
 							}
 						break;
 
@@ -156,6 +156,7 @@ class Application
 								std::unique_ptr<FILE,FileDeleter> src(fopen(filename.c_str(),"rb"));
 								m_tp.b().m_view.glActivate();
 								m_renderer->mesh(Mesh::fromWavefrontObj(src.get(),filename.c_str()));
+								log("(i) Model loaded");
 								}
 							}
 						break;
