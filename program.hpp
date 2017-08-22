@@ -33,10 +33,14 @@ namespace Giesela
 				}
 
 			void bind() const noexcept
-				{glUseProgram(m_handle);}
+				{
+				glUseProgram(m_handle);
+				}
 
 			void unbind() const noexcept
-				{glUseProgram(0);}
+				{
+				glUseProgram(0);
+				}
 
 		private:
       		static constexpr void collect(GLuint* handles) noexcept
@@ -71,8 +75,6 @@ namespace Giesela
 			for(size_t k=0;k<sizeof...(T)+1;++k)
 				{glDetachShader(m_handle,handles[k]);}
 			glDeleteProgram(m_handle);
-		
-			fprintf(stderr,"%s ",message);
 			throw Error("Program link error: ",static_cast<const char*>(message));
 			}
 		}

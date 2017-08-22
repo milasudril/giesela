@@ -90,13 +90,8 @@ Renderer::Renderer(void (*log_callback)(void* cb_obj,const char* message),void* 
 	shader(s_default_shader);
 	m_theta=0;
 	m_cam_pos=glm::vec3{0.0f,-3.0f,2.0f};
-	
 	m_View=glm::lookAt(m_cam_pos,glm::vec3{0.0f,0.0f,0.0f},glm::vec3{0.0f,0.0f,1.0f});
 	m_Projection=glm::perspective(0.5f*pi,1.0f,0.1f,100.0f);
-	glUniform3f(2,0.5f,0.0f,1.0f);
-	
-	glUniform3f(3,-2.0f,-2.0f,3.0f);
-	glUniform1f(4,10.0f);
 	}
 
 void Renderer::shader(const char* shader_string)
@@ -122,6 +117,9 @@ void main()
 		 ,Shader{shader_string,ShaderType::FRAGMENT_SHADER}
 		));
 	m_program->bind();
+	glUniform3f(2,0.5f,0.0f,1.0f);
+	glUniform3f(3,-2.0f,-2.0f,3.0f);
+	glUniform1f(4,10.0f);
 	}
 
 Renderer::~Renderer()
