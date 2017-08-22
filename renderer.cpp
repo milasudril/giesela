@@ -16,10 +16,6 @@ static constexpr auto pi=std::acos(-1.0f);
 
 static constexpr const char* s_default_shader=R"EOF(#version 450 core
 
-in vec3 fragment_normal;
-in vec3 fragment_pos;
-out vec3 color;
-
 float sRGB(float x)
 	{
 	if (x <= 0.00031308)
@@ -29,13 +25,17 @@ float sRGB(float x)
 	}
 
 vec3 to_srgb(vec3 color)
-	{
-	return vec3(sRGB(color.r),sRGB(color.g),sRGB(color.b));
-	}
+	{return vec3(sRGB(color.r),sRGB(color.g),sRGB(color.b));}
+
+in vec3 fragment_normal;
+in vec3 fragment_pos;
+in vec3 fragment_pos_raw;
+out vec3 color;
 
 layout(location=2) uniform vec3 color_in;
 layout(location=3) uniform vec3 light_position;
 layout(location=4) uniform float light_intensity;
+layout(location=5) uniform vec3 camera_position;
 
 void main()
 	{
@@ -106,12 +106,14 @@ layout(location=1) uniform mat4 MVP;
 
 out vec3 fragment_normal;
 out vec3 fragment_pos;
+out vec3 fragment_pos_raw;
 
 void main()
 	{
 	gl_Position=MVP*vec4(vertex_pos,1.0);
 	fragment_normal=vec3( Model*vec4(vertex_normal,0.0) );
 	fragment_pos=vec3( Model*vec4(vertex_pos,1.0) );
+	fragment_pos_raw=vertex_pos;
 	}
 )EOF",ShaderType::VERTEX_SHADER}
 		 ,Shader{shader_string,ShaderType::FRAGMENT_SHADER}
@@ -120,6 +122,7 @@ void main()
 	glUniform3f(2,0.25f,0.0f,1.0f);
 	glUniform3f(3,-2.0f,-2.0f,3.0f);
 	glUniform1f(4,10.0f);
+	glUniform3f(5,m_cam_pos.x,m_cam_pos.y,m_cam_pos.z);
 	}
 
 Renderer::~Renderer()
