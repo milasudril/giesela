@@ -12,6 +12,7 @@
 #include "uixx/label.hpp"
 #include "uixx/button.hpp"
 #include "uixx/filenameselect.hpp"
+#include "uixx/slider.hpp"
 
 using namespace Giesela;
 
@@ -37,11 +38,25 @@ struct PreviewPanel
 	{
 	PreviewPanel(UIxx::Container& cnt):m_box(cnt,true)
 		,m_model(m_box,"Model")
+			,m_color(m_box,false)
+				,m_color_hue(m_color.insertMode({2,UIxx::Box::FILL|UIxx::Box::EXPAND}),false)
+					,m_hue_label(m_color_hue,"Hue:")
+					,m_hue_slider(m_color_hue.insertMode({0,UIxx::Box::FILL|UIxx::Box::EXPAND}),false)
+				,m_color_sat(m_color,false)
+					,m_sat_label(m_color_sat,"Saturation:")
+					,m_sat_slider(m_color_sat.insertMode({0,UIxx::Box::FILL|UIxx::Box::EXPAND}),false)
 		,m_view(m_box.insertMode({0,UIxx::Box::FILL|UIxx::Box::EXPAND}))
 		{}
 		
 	UIxx::Box m_box;
 		UIxx::Button m_model;
+		UIxx::Box m_color;
+			UIxx::Box m_color_hue;
+				UIxx::Label m_hue_label;
+				UIxx::Slider m_hue_slider;
+			UIxx::Box m_color_sat;
+				UIxx::Label m_sat_label;
+				UIxx::Slider m_sat_slider;
 		UIxx::GLArea m_view;
 	};
 	
@@ -53,6 +68,56 @@ struct FileDeleter
 			{fclose(fptr);}
 		}
 	};
+
+
+static std::pair<float,int> max(glm::vec3 v)
+	{
+	auto ret=std::pair<float,int>{v[0],0};
+	for(int i=ret.second + 1;i < 3; ++i)
+		{
+		if(v[i] > ret.first)
+			{ret=std::pair<float,int>{v[i],i};}
+		}
+	return ret;
+	}
+
+static glm::vec3 hs2rgb(float hue,float sat)
+	{
+	auto L=0.5f;
+	auto H=6.0f*hue;
+	auto C=(1.0f - std::abs(2.0f*L - 1))*sat;
+	auto X=C*(1.0f - std::abs(glm::mod(H,2.0f) - 1.0f) );
+	glm::vec3 rgblut[7]=
+		{
+		 glm::vec3(C,X,0)
+		,glm::vec3(X,C,0)
+		,glm::vec3(0,C,X)
+		,glm::vec3(0,X,C)
+		,glm::vec3(X,0,C)
+		,glm::vec3(C,0,X)
+		,glm::vec3(C,X,0)
+		};
+	auto m=L - 0.5f*C;
+	return rgblut[int(H)] + glm::vec3(m,m,m);	
+	}
+	
+static std::pair<float,float> rgb2hs(glm::vec3 color)
+	{
+	auto Mp=max(color);
+	auto m=std::min(std::min(color.r,color.g),color.b);
+	
+	auto C=Mp.first - m;
+	float hue[3]={
+		 glm::mod((color.g - color.b)/C,6.0f)
+		,(color.b - color.r)/C + 2.0f
+		,(color.r - color.g)/C + 4.0f
+		};
+	auto H=hue[Mp.second]/6.0f;
+	auto L=0.5f*(Mp.first + m);
+	auto S=L<1.0f? C/(1.0f - std::abs(2*L - 1)) : 0.0f;
+	
+	return std::pair<float,float>{H,S};
+	}
 
 class Application
 	{
@@ -66,9 +131,10 @@ class Application
 				,[](UIxx::Container& cnt)
 					{return PreviewPanel(cnt);})
 			{
-			m_tp.b().m_view
-				.versionRequest(4,5).callback(*this,0);
+			m_tp.b().m_view.versionRequest(4,5).callback(*this,0);
 			m_tp.b().m_model.callback(*this,2);
+			m_tp.b().m_hue_slider.callback(*this,0);
+			m_tp.b().m_sat_slider.callback(*this,1);
 			m_tp.a().m_src.content(Renderer::defaultShader()).lineNumbers(true)
 				.highlight(".glslf");
 			m_tp.a().m_label.alignment(0.0f);
@@ -111,6 +177,10 @@ class Application
 				{
 				area.glActivate();
 				m_renderer.reset(new Renderer(*this));
+			//glm::vec3(0.2126,0.7152,0.0772)
+				auto hs=rgb2hs(m_renderer->color());
+				m_tp.b().m_hue_slider.value(hs.first);
+				m_tp.b().m_sat_slider.value(hs.second);
 				}
 			catch(const Error& err)
 				{log(err.message());}
@@ -121,7 +191,23 @@ class Application
 			m_tp.main().append(message).append("\n").scrollToEnd();
 			fprintf(stderr,"%s\n",message);
 			}
-			
+		
+		void changed(UIxx::Slider& slider,int id)
+			{
+			switch(id)
+				{
+				case 0:
+				case 1:
+					if(m_renderer)
+						{
+						m_tp.b().m_view.glActivate();
+						m_renderer->color(hs2rgb(m_tp.b().m_hue_slider.value()
+							,m_tp.b().m_sat_slider.value()));
+						}
+					break;
+				}
+			}
+	
 		void clicked(UIxx::Button& btn,int id)
 			{
 			try

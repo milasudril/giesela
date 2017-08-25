@@ -92,6 +92,22 @@ Renderer::Renderer(void (*log_callback)(void* cb_obj,const char* message),void* 
 	m_cam_pos=glm::vec3{0.0f,-3.0f,2.0f};
 	m_View=glm::lookAt(m_cam_pos,glm::vec3{0.0f,0.0f,0.0f},glm::vec3{0.0f,0.0f,1.0f});
 	m_Projection=glm::perspective(0.5f*pi,1.0f,0.1f,100.0f);
+	
+	color(glm::vec3(0.5f,0.0f,1.0f));
+	}
+	
+static float to_linear(float x) noexcept
+	{return x<0.04045f?x/12.92f:std::pow( (x + 0.055f)/(1.0f + 0.055f),2.4f);}
+	
+static glm::vec3 to_linear(glm::vec3 color_srgb) noexcept
+	{return glm::vec3( to_linear(color_srgb.r),to_linear(color_srgb.g),to_linear(color_srgb.b) );}
+	
+Renderer& Renderer::color(glm::vec3 color_new) noexcept
+	{
+	m_color=color_new;
+	auto linear=to_linear(color_new);
+	glUniform3f(2,linear.r,linear.g,linear.b);
+	return *this;
 	}
 
 void Renderer::shader(const char* shader_string)
@@ -119,7 +135,8 @@ void main()
 		 ,Shader{shader_string,ShaderType::FRAGMENT_SHADER}
 		));
 	m_program->bind();
-	glUniform3f(2,0.25f,0.0f,1.0f);
+	auto linear=to_linear(m_color);
+	glUniform3f(2,linear.r,linear.g,linear.b);
 	glUniform3f(3,-2.0f,-2.0f,3.0f);
 	glUniform1f(4,10.0f);
 	glUniform3f(5,m_cam_pos.x,m_cam_pos.y,m_cam_pos.z);
