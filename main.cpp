@@ -45,6 +45,9 @@ struct PreviewPanel
 				,m_color_sat(m_color,false)
 					,m_sat_label(m_color_sat,"Saturation:")
 					,m_sat_slider(m_color_sat.insertMode({0,UIxx::Box::FILL|UIxx::Box::EXPAND}),false)
+				,m_color_lightness(m_color,false)
+					,m_lightness_label(m_color_lightness,"Lightness:")
+					,m_lightness_slider(m_color_lightness.insertMode({0,UIxx::Box::FILL|UIxx::Box::EXPAND}),false)
 		,m_view(m_box.insertMode({0,UIxx::Box::FILL|UIxx::Box::EXPAND}))
 		{}
 		
@@ -57,6 +60,9 @@ struct PreviewPanel
 			UIxx::Box m_color_sat;
 				UIxx::Label m_sat_label;
 				UIxx::Slider m_sat_slider;
+			UIxx::Box m_color_lightness;
+				UIxx::Label m_lightness_label;
+				UIxx::Slider m_lightness_slider;
 		UIxx::GLArea m_view;
 	};
 	
@@ -81,9 +87,9 @@ static std::pair<float,int> max(glm::vec3 v)
 	return ret;
 	}
 
-static glm::vec3 hs2rgb(float hue,float sat)
+static glm::vec3 hsl2rgb(float hue,float sat,float lightness)
 	{
-	auto L=0.5f;
+	auto L=lightness;
 	auto H=6.0f*hue;
 	auto C=(1.0f - std::abs(2.0f*L - 1))*sat;
 	auto X=C*(1.0f - std::abs(glm::mod(H,2.0f) - 1.0f) );
@@ -101,7 +107,7 @@ static glm::vec3 hs2rgb(float hue,float sat)
 	return rgblut[int(H)] + glm::vec3(m,m,m);	
 	}
 	
-static std::pair<float,float> rgb2hs(glm::vec3 color)
+static std::tuple<float,float,float> rgb2hsl(glm::vec3 color)
 	{
 	auto Mp=max(color);
 	auto m=std::min(std::min(color.r,color.g),color.b);
@@ -116,7 +122,7 @@ static std::pair<float,float> rgb2hs(glm::vec3 color)
 	auto L=0.5f*(Mp.first + m);
 	auto S=L<1.0f? C/(1.0f - std::abs(2*L - 1)) : 0.0f;
 	
-	return std::pair<float,float>{H,S};
+	return std::tuple<float,float,float>{H,S,L};
 	}
 
 class Application
@@ -135,6 +141,7 @@ class Application
 			m_tp.b().m_model.callback(*this,2);
 			m_tp.b().m_hue_slider.callback(*this,0);
 			m_tp.b().m_sat_slider.callback(*this,1);
+			m_tp.b().m_lightness_slider.callback(*this,1);
 			m_tp.a().m_src.content(Renderer::defaultShader()).lineNumbers(true)
 				.highlight(".glslf");
 			m_tp.a().m_label.alignment(0.0f);
@@ -177,10 +184,11 @@ class Application
 				{
 				area.glActivate();
 				m_renderer.reset(new Renderer(*this));
-			//glm::vec3(0.2126,0.7152,0.0772)
-				auto hs=rgb2hs(m_renderer->color());
-				m_tp.b().m_hue_slider.value(hs.first);
-				m_tp.b().m_sat_slider.value(hs.second);
+				
+				auto hsl=rgb2hsl(m_renderer->color());
+				m_tp.b().m_hue_slider.value(std::get<0>(hsl));
+				m_tp.b().m_sat_slider.value(std::get<1>(hsl));
+				m_tp.b().m_lightness_slider.value(std::get<2>(hsl));
 				}
 			catch(const Error& err)
 				{log(err.message());}
@@ -198,11 +206,14 @@ class Application
 				{
 				case 0:
 				case 1:
+				case 2:
 					if(m_renderer)
 						{
 						m_tp.b().m_view.glActivate();
-						m_renderer->color(hs2rgb(m_tp.b().m_hue_slider.value()
-							,m_tp.b().m_sat_slider.value()));
+						auto c=hsl2rgb(m_tp.b().m_hue_slider.value()
+							,m_tp.b().m_sat_slider.value()
+							,m_tp.b().m_lightness_slider.value());
+						m_renderer->color(c);
 						}
 					break;
 				}
